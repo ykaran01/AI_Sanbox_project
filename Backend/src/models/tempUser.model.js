@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 const tempUserSchema = new mongoose.Schema({
-
     name: {
         type: String,
         required: true,

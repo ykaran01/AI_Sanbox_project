@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
-
 import  {Redis} from "ioredis"
-
-
 export const connectDB =  async()=>{
     try{
         await mongoose.connect(process.env.MONGODB_URL)
@@ -10,13 +7,15 @@ export const connectDB =  async()=>{
     }catch(err){
         console.log(`Connection problem ${err.message}`)
         process.exit(0)
-
     }
 }
-
 const redisConfig = {
   port: 6379,
   host: '127.0.0.1',
 };
 
 export const redisConnection = new Redis(redisConfig);
+
+export const publiser = new Redis(redisConfig)
+
+export const subsriber = new Redis(redisConfig)

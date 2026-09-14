@@ -34,3 +34,38 @@ export const runtimes = {
         run: "./main"
     }
 };
+
+export const getTheDownload = (dependency, language) => {
+    console.log(dependency,language)
+    if (!Array.isArray(dependency) || dependency.length === 0) {
+        return "";
+    }
+
+    if (language !== "javascript" && language !== "python") {
+        return "";
+    }
+    console.log(dependency,language)
+
+    const validator = /^[a-zA-Z0-9_.@/-]+$/;
+
+    const safeModules = dependency.filter((value) => {
+        return (
+            typeof value === "string" &&
+            value.length > 0 &&
+            validator.test(value)
+        );
+    });
+    if (safeModules.length !== dependency.length) {
+        return "";
+    }
+
+    if (language === "javascript") {
+        return `npm install ${safeModules.join(" ")}`;
+    }
+
+    if (language === "python") {
+        return `pip install ${safeModules.join(" ")}`;
+    }
+
+    return "";
+};

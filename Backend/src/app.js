@@ -11,7 +11,6 @@ app.use(cors({
 }))
 
 
-
 import { codeRouter } from './route/code.route.js'
 import { userRouter } from './route/user.route.js'
 app.use('/api',codeRouter)

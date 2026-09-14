@@ -1,23 +1,23 @@
-import { ChatGroq } from "@langchain/groq";
+
+import { ChatOllama } from "@langchain/ollama";
 import { z } from "zod";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
-import { systemPrompt ,fixerPrompt} from "./Promt.js";
-import { publiser } from "../db/connetDB.js";
-
+import { systemPrompt } from "./Promt.js";
 
 const CodeResponseSchema = z.object({
     type: z.enum(["code", "message"]),
     language: z.string(),
     code: z.string(),
-    dependencies : z.array(z.string()),
     message: z.string(),
 });
 
-const model = new ChatGroq({
-    apiKey: "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",
-    model: "openai/gpt-oss-120b",
+
+const model = new ChatOllama({
+    model: "qwen2.5-coder:3b",
     temperature: 0,
+    
 });
+
 
 const structuredModel = model.withStructuredOutput(CodeResponseSchema);
 
@@ -27,7 +27,7 @@ export const invokeModel = async (state) => {
             new SystemMessage(systemPrompt),
             ...state.messages,
         ];
-        await publiser.publish(`job:${state.executeId}`,JSON.stringify({status:"generating"}))
+
         const result = await structuredModel.invoke(messages);
         console.log(result)
         return {
@@ -35,9 +35,8 @@ export const invokeModel = async (state) => {
             language: result.language,
             code: result.code,
             messages: [
-                new SystemMessage(result.message)
+                  new SystemMessage(result.message)
             ],
-            dependency:result.dependencies
         };
     } catch (error) {
         console.error("LLM Error in invokeModel:", error);
@@ -45,7 +44,7 @@ export const invokeModel = async (state) => {
         return {
             type: "message",
             messages: [
-                new SystemMessage("Sorry Unable code the input")
+               new SystemMessage("Sorry Unable code the input")
             ],
         };
     }
@@ -53,10 +52,24 @@ export const invokeModel = async (state) => {
 
 export const codeFixer = async (state) => {
     try {
+        const lastError = state.errorMessages[state.errorMessages.length - 1] || "Unknown error";
+        const fixInstruction = `
+        You are an expert debugger. The previous ${state.language} code execution failed.
+        Here is the code you wrote:
+        \`\`\`${state.language}
+        ${state.code}
+        \`\`\`
+
+        Here is the error message returned from the compiler/runtime:
+        ${lastError}
+
+        Fix the code to resolve this error. Ensure your explanation is concise in the "message" field.`;
+
         const messages = [
-            new HumanMessage(fixerPrompt(state))
+            new SystemMessage(systemPrompt),
+            new HumanMessage(fixInstruction)
         ];
-        await publiser.publish(`job:${state.executeId}`,JSON.stringify({status:"fixing"}))
+
         const result = await structuredModel.invoke(messages);
         console.log(result)
         return {
@@ -76,4 +89,4 @@ export const codeFixer = async (state) => {
             ],
         };
     }
-};
+}

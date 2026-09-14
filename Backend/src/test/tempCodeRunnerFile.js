@@ -1,8 +1,8 @@
 import { graph } from "../langraph/Langraph.js";
 import { HumanMessage } from "@langchain/core/messages";
 const intial = {
-     userPrompt :"write adding to valie in java",
-    messages:[new HumanMessage("write adding to valie in java and run it")],
+     userPrompt :"createe adding or two variable in javascript and run it",
+    messages:[new HumanMessage("createe adding or two variable in javascript and run it")],
     maxiterations:2
 }
 

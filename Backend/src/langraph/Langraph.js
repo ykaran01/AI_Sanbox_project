@@ -15,13 +15,12 @@ import {
     routeFortheCode
 } from "../langraph/functions.js";
 
-import {randomUUID} from 'crypto'
+
 
 
 const StateAnnotation = Annotation.Root({
-     executionId: Annotation({
-        default: () => randomUUID(),
-    }),
+     executionId: Annotation(),
+    userPrompt : Annotation(),
     userId:Annotation(),
     type: Annotation(),
     messages: Annotation({
@@ -36,6 +35,9 @@ const StateAnnotation = Annotation.Root({
         default: () => [],
     }),
     executionTime: Annotation(),
+    dependency : Annotation({
+        default:()=>[]
+    }),
     success: Annotation(),
     iteration: Annotation({
         reducer: (x, y) => y ?? x,
@@ -44,6 +46,7 @@ const StateAnnotation = Annotation.Root({
     maxiterations: Annotation({
         default: () => 1,
     }),
+    errorType:Annotation()
 });
 
 const graph = new StateGraph(StateAnnotation)
