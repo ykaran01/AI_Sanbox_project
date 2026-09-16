@@ -56,7 +56,7 @@ export const codeFixer = async (state) => {
         const messages = [
             new HumanMessage(fixerPrompt(state))
         ];
-        await publiser.publish(`job:${state.executeId}`,JSON.stringify({status:"fixing"}))
+        await publiser.publish(`thread:${state.threadId}`,JSON.stringify({status:"fixing"}))
         const result = await structuredModel.invoke(messages);
         console.log(result)
         return {

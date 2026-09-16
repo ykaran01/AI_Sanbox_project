@@ -149,8 +149,8 @@ export const loginUser = asyncHandler(async (req, res) => {
     delete loggedInUser.expireOTP;
 
     res.status(200)
-        .cookie("accessToken", accessToken, cookieOptions)
-        .cookie("refreshToken", refreshToken, cookieOptions)
+        .cookie("accessToken", accessToken)
+        .cookie("refreshToken", refreshToken)
         .json(
             new ApiResponse(
                 200,

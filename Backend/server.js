@@ -4,7 +4,9 @@ import { connectDB } from './src/db/connetDB.js';
 import { createServer } from "http";
 import {Server} from "socket.io"
 import { websocket } from './src/websocket/websocketconnection.js';
+dotenv.config()
 const server = createServer(app)
+
 const io = new Server(server,{
     cors:{origin:"*"}
 })
@@ -12,7 +14,7 @@ websocket(io)
 
 
 
-dotenv.config()
+
 connectDB()
 
 server.listen(3000, () => {

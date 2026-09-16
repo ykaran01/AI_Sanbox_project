@@ -19,8 +19,9 @@ import {
 
 
 const StateAnnotation = Annotation.Root({
-     executionId: Annotation(),
+                    executionId: Annotation(),
     userPrompt : Annotation(),
+    threadId:Annotation(),
     userId:Annotation(),
     type: Annotation(),
     messages: Annotation({

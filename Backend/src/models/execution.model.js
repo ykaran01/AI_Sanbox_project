@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const executionSchema = new mongoose.Schema(
@@ -8,22 +9,25 @@ const executionSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
-        type:{
-            type:String,
-            enum:["message","code",""],
-            default:""
 
+        type: {
+            type: String,
+            enum: ["message", "code", ""],
+            default: "",
         },
+
         executionId: {
             type: String,
             required: true,
             unique: true,
             index: true,
         },
+
         userPrompt: {
             type: String,
             required: true,
         },
+
         language: {
             type: String,
             enum: [
@@ -32,24 +36,39 @@ const executionSchema = new mongoose.Schema(
                 "java",
                 "c",
                 "cpp",
+                "",
             ],
-            required: true,
+            default: "",
         },
+
         code: {
             type: String,
-            required: true,
+            default: "",
         },
+
         dependencies: {
             type: [String],
             default: [],
         },
+
         result: {
             type: String,
             default: "",
         },
 
         messages: {
-            type: [String],
+            type: [
+                {
+                    type: {
+                        type: String,
+                        enum: ["human", "ai", "system", "tool"],
+                    },
+                    content: {
+                        type: String,
+                        default: "",
+                    },
+                },
+            ],
             default: [],
         },
 
@@ -62,19 +81,22 @@ const executionSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        
+
         executionTime: {
             type: Number,
             default: 0,
         },
+
         iteration: {
             type: Number,
             default: 0,
         },
+
         maxIterations: {
             type: Number,
             default: 3,
         },
+
         error: {
             type: String,
             default: null,
@@ -85,5 +107,7 @@ const executionSchema = new mongoose.Schema(
     }
 );
 
-export const exceutionModel =
-    mongoose.model("Execution", executionSchema);
+export const exceutionModel = mongoose.model(
+    "Execution",
+    executionSchema
+);

@@ -12,10 +12,11 @@ export const connectDB =  async()=>{
 const redisConfig = {
   port: 6379,
   host: '127.0.0.1',
+  maxRetriesPerRequest:null
 };
 
 export const redisConnection = new Redis(redisConfig);
 
 export const publiser = new Redis(redisConfig)
 
-export const subsriber = new Redis(redisConfig)
+export const subscriber = new Redis(redisConfig)
