@@ -13,13 +13,17 @@ const CodeResponseSchema = z.object({
     message: z.string(),
 });
 
+
 const model = new ChatGroq({
-    apiKey: "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",
+    apiKey: process.env.GROCK_TOKEN,
     model: "openai/gpt-oss-120b",
     temperature: 0,
 });
 
+
 const structuredModel = model.withStructuredOutput(CodeResponseSchema);
+
+
 
 export const invokeModel = async (state) => {
     try {
@@ -51,12 +55,14 @@ export const invokeModel = async (state) => {
     }
 };
 
+
+
 export const codeFixer = async (state) => {
     try {
         const messages = [
             new HumanMessage(fixerPrompt(state))
         ];
-        await publiser.publish(`thread:${state.threadId}`,JSON.stringify({status:"fixing"}))
+        await publiser.publish(`thread:${state.threadId}`,JSON.stringify({status:"fixing",jobId:state.executionId}))
         const result = await structuredModel.invoke(messages);
         console.log(result)
         return {

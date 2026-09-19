@@ -30,7 +30,7 @@ export const puttingInputInQueue = async (input) => {
         userId,
         executionId: job.id,
         userPrompt: userInput,
-        maxIterations: 3,
+        threadId:threadId
     });
 
     console.log(`Job ${job.id} added to queue`);
@@ -40,10 +40,7 @@ export const puttingInputInQueue = async (input) => {
 
 export const worker = new Worker(
     "llm_queue",
-
     async (job) => {
-
-
         const {
             userId,
             userInput,
@@ -61,29 +58,28 @@ export const worker = new Worker(
 
         const initialState = {
             userPrompt: userInput,
-
             messages: [
                 new HumanMessage(userInput),
             ],
-
             userId,
             executionId: job.id,
-
             maxiterations: 3,
             iteration: 0,
             threadId:threadId,
             code: "",
             language: "",
             dependencies: [],
-
             result: "",
             errorMessages: [],
-
             success: false,
             executionTime: 0,
         };
 
-        const result = await graph.invoke(initialState);
+        const result = await graph.invoke(initialState,{
+            configurable:{
+                 thread_id :threadId,
+            }
+        });
         console.log(result)
         const messages = (result.messages || []).map((message) => ({
             type: message._getType(),
@@ -95,26 +91,15 @@ export const worker = new Worker(
                 executionId: job.id,
                 userId,
             },
-
             {
                 type: result.type || "",
                 language: result.language || "",
                 code: result.code || "",
-                dependencies: result.dependencies || [],
-
                 result: result.result || "",
-
                 messages,
-
-                errorMessages: result.errorMessages || [],
-
                 success: result.success || false,
-
                 executionTime: result.executionTime || 0,
-
                 iteration: result.iteration || 0,
-
-                
             },
 
             {
@@ -125,11 +110,12 @@ export const worker = new Worker(
         await publiser.publish(
             `thread:${threadId}`,
             JSON.stringify({
+                type:result.type,
                 jobId: job.id,
                 status: "completed",
-                messages:messages,
+                messages:messages[messages.length-1],
                 success: result.success || false,
-                code:result.code,
+                code:result.code || "",
                 language:result.language,
                 result: result.result || "",
             })
@@ -137,8 +123,7 @@ export const worker = new Worker(
 
 
         console.log(`Job ${job.id} completed`);
-
-        return result;
+        
     },
 
     {
@@ -151,34 +136,24 @@ export const worker = new Worker(
 
 
 worker.on("failed", async (job, error) => {
-
     console.error(
         `Job ${job?.id} failed:`,
         error.message
     );
-
-
     if (!job) return;
-
-
     const {
         userId,
         threadId,
     } = job.data;
-
-
     await exceutionModel.findOneAndUpdate(
         {
             executionId: job.id,
             userId,
         },
-
         {
-
-            error: error.message,
+        error: error.message,
         }
     );
-
     await publiser.publish(
         `thread:${threadId}`,
         JSON.stringify({

@@ -15,19 +15,17 @@ const executionSchema = new mongoose.Schema(
             enum: ["message", "code", ""],
             default: "",
         },
-
-        executionId: {
+        executionId: { 
             type: String,
             required: true,
-            unique: true,
             index: true,
         },
 
-        userPrompt: {
+        threadId:{
             type: String,
             required: true,
+            index: true
         },
-
         language: {
             type: String,
             enum: [
@@ -45,12 +43,6 @@ const executionSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
-
-        dependencies: {
-            type: [String],
-            default: [],
-        },
-
         result: {
             type: String,
             default: "",
@@ -71,12 +63,7 @@ const executionSchema = new mongoose.Schema(
             ],
             default: [],
         },
-
-        errorMessages: {
-            type: [String],
-            default: [],
-        },
-
+        
         success: {
             type: Boolean,
             default: false,
@@ -90,11 +77,6 @@ const executionSchema = new mongoose.Schema(
         iteration: {
             type: Number,
             default: 0,
-        },
-
-        maxIterations: {
-            type: Number,
-            default: 3,
         },
 
         error: {

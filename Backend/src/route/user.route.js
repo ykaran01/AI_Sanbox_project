@@ -6,8 +6,6 @@ const userRouter = Router()
 
 userRouter.post('/register',joiMiddleware,registerUser)
 userRouter.post('/login',loginUser)
-
-
 userRouter.post('/otp',verifyUser)
 userRouter.get('/me',userMiddleware,getUser)
 userRouter.post('/refresh',refresh)

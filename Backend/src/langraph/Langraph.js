@@ -1,25 +1,22 @@
-
-import {
-    END,
-    START,
-    StateGraph,
-    Annotation,
-    messagesStateReducer
-} from "@langchain/langgraph";
-
+import {END,START,StateGraph,Annotation,messagesStateReducer} from "@langchain/langgraph";
 import { invokeModel, codeFixer } from "../llm/model.service.js";
 import { Sandbox_execution } from "../sandbox/execution.services.js";
+import {routeAfterExecution,routeFortheCode} from "../langraph/functions.js";
+import {MemorySaver,InMemoryStore,} from "@langchain/langgraph"
+import {MongoDBSaver} from  "@langchain/langgraph-checkpoint-mongodb"
+import { MongoClient } from "mongodb"
+import "dotenv/config"
+const client = new MongoClient(process.env.MONGODB_URL)
 
-import {
-    routeAfterExecution,
-    routeFortheCode
-} from "../langraph/functions.js";
+await client.connect()
+const checkpointer = new MongoDBSaver({
+    client:client})
 
 
-
+const saver = new  InMemoryStore()
 
 const StateAnnotation = Annotation.Root({
-                    executionId: Annotation(),
+    executionId: Annotation(),
     userPrompt : Annotation(),
     threadId:Annotation(),
     userId:Annotation(),
@@ -32,7 +29,6 @@ const StateAnnotation = Annotation.Root({
     language: Annotation(),
     result: Annotation(),
     errorMessages: Annotation({
-        reducer: (left, right) => (left || []).concat(right || []),
         default: () => [],
     }),
     executionTime: Annotation(),
@@ -45,10 +41,11 @@ const StateAnnotation = Annotation.Root({
         default: () => 0,
     }),
     maxiterations: Annotation({
-        default: () => 1,
+        default: () => 3,
     }),
     errorType:Annotation()
 });
+
 
 const graph = new StateGraph(StateAnnotation)
     .addNode("llm_Calling", invokeModel)
@@ -73,6 +70,6 @@ const graph = new StateGraph(StateAnnotation)
         }
     )
     .addEdge("codeFixer", "Sandbox_execution")
-    .compile();
+    .compile({checkpointer:checkpointer,store:saver});
 
 export { graph };

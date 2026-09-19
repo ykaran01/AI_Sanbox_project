@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 import  {Redis} from "ioredis"
+import "dotenv/config"
 export const connectDB =  async()=>{
     try{
-        await mongoose.connect(process.env.MONGODB_URL)
+        await mongoose.connect("mongodb+srv://ykaran1067_db_user:A47sqWaNA4W2WJ4W@new-stack-clustor.4c1ndtx.mongodb.net/agent")
         console.log("Database is Connected")
     }catch(err){
         console.log(`Connection problem ${err.message}`)
