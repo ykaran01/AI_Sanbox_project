@@ -1,18 +1,21 @@
 export const routeAfterExecution = (state) => {
-    if (state.success) {
-        return "success"
+    if (state.job.success) {
+        return "success";
     }
-    if (state.iteration >= state.maxiterations) {
-        return "failed"
+
+    if (state.job.iteration >= state.job.maxIterations) {
+        return "failed";
     }
-    return "fix"
-}
+
+    return "fix";
+};
+
 
 export const routeFortheCode = (state) => {
-
-    if(state.type==="message"){
-        return "message"
+    if (state.job.type === "message") {
+        state.job.success = true
+        return "message";
     }
-    return "code"
-}
 
+    return "code";
+};

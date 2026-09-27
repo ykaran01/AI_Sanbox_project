@@ -6,11 +6,15 @@ import { exceutionModel } from "../models/execution.model.js";
 import { redisConnection, publiser } from "../db/connetDB.js";
 import { graph } from "../langraph/Langraph.js";
 
+// QUEUE
+// --------------------------------------------------
+
 const llmQueue = new Queue("llm_queue", {
     connection: redisConnection,
 });
 
 export const puttingInputInQueue = async (input) => {
+
     const {
         userId,
         userInput,
@@ -29,8 +33,10 @@ export const puttingInputInQueue = async (input) => {
     await exceutionModel.create({
         userId,
         executionId: job.id,
-        userPrompt: userInput,
-        threadId:threadId
+        userprompt: userInput,
+        threadId,
+        success: false,
+        iteration: 0,
     });
 
     console.log(`Job ${job.id} added to queue`);
@@ -40,12 +46,15 @@ export const puttingInputInQueue = async (input) => {
 
 export const worker = new Worker(
     "llm_queue",
+
     async (job) => {
+
         const {
             userId,
             userInput,
             threadId,
         } = job.data;
+
 
         await publiser.publish(
             `thread:${threadId}`,
@@ -57,74 +66,108 @@ export const worker = new Worker(
         );
 
         const initialState = {
-            userPrompt: userInput,
+            userId,
+            threadId,
             messages: [
                 new HumanMessage(userInput),
             ],
-            userId,
-            executionId: job.id,
-            maxiterations: 3,
-            iteration: 0,
-            threadId:threadId,
-            code: "",
-            language: "",
-            dependencies: [],
-            result: "",
-            errorMessages: [],
-            success: false,
-            executionTime: 0,
+
+            job: {
+                executionId: job.id,
+                userPrompt: userInput,
+                type: "",
+                code: "",
+                language: "",
+                result: "",
+                message: "",
+                errorMessages: [],
+                executionTime: 0,
+                dependency: [],
+                success: false,
+                iteration: 0,
+                maxIterations: 3,
+                errorType: null,
+            },
         };
 
-        const result = await graph.invoke(initialState,{
-            configurable:{
-                 thread_id :threadId,
+        const result = await graph.invoke(
+            initialState,
+            {
+                configurable: {
+                    thread_id: threadId,
+                },
             }
-        });
-        console.log(result)
-        const messages = (result.messages || []).map((message) => ({
-            type: message._getType(),
-            content: message.content,
-        }));
+        );
 
-        await exceutionModel.findOneAndUpdate(
-            {
-                executionId: job.id,
-                userId,
-            },
-            {
-                type: result.type || "",
-                language: result.language || "",
-                code: result.code || "",
-                result: result.result || "",
-                messages,
-                success: result.success || false,
-                executionTime: result.executionTime || 0,
-                iteration: result.iteration || 0,
-            },
+        console.log("LangGraph result:", result);
+        const finalJob = result.job || {};
 
-            {
-                returnDocument: "after",
-            }
+        const messages = finalJob.message 
+
+        const updatedExecution =
+            await exceutionModel.findOneAndUpdate(
+
+                {
+                    executionId: job.id,
+                    userId,
+                },
+                {
+                  type: finalJob.type || "",
+
+                    language: finalJob.language || "",
+
+                    code: finalJob.code || "",
+
+                    result: finalJob.result || "",
+
+                    messages,
+
+                    success: finalJob.success || false,
+
+                    executionTime:
+                        finalJob.executionTime || 0,
+
+                    iteration:
+                        finalJob.iteration || 0,
+
+                    
+                },
+
+                {
+                    new: true,
+                }
+            );
+
+
+        console.log(
+            "Execution saved:",
+            updatedExecution
         );
 
         await publiser.publish(
             `thread:${threadId}`,
+
             JSON.stringify({
-                type:result.type,
+                type: finalJob.type,
                 jobId: job.id,
+                threadId,
                 status: "completed",
-                messages:messages[messages.length-1],
-                success: result.success || false,
-                code:result.code || "",
-                language:result.language,
-                result: result.result || "",
+                message:messages,
+                success:finalJob.success || false,
+                code:finalJob.code || "",
+                language:finalJob.language || "",
+                result:finalJob.result || "",
+            
             })
         );
 
 
-        console.log(`Job ${job.id} completed`);
-        
+        console.log(
+            `Job ${job.id} completed`
+        );
     },
+
+
 
     {
         connection: redisConnection,
@@ -132,30 +175,39 @@ export const worker = new Worker(
     }
 );
 
-
-
-
 worker.on("failed", async (job, error) => {
+
     console.error(
         `Job ${job?.id} failed:`,
         error.message
     );
+
+
     if (!job) return;
+
+
     const {
         userId,
         threadId,
     } = job.data;
+
     await exceutionModel.findOneAndUpdate(
+
         {
             executionId: job.id,
             userId,
         },
+
         {
-        error: error.message,
+            success: false,
+            error: error.message,
         }
     );
+
     await publiser.publish(
+
         `thread:${threadId}`,
+
         JSON.stringify({
             jobId: job.id,
             threadId,

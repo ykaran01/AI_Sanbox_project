@@ -3,7 +3,7 @@ import { ApiError } from "../utils/Apierror.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import { exceutionModel } from "../models/execution.model.js";
 import { puttingInputInQueue } from "../Queue/bullmq.js";
-
+import mongoose from "mongoose";
 
 export const getCode = asyncHandler(async (req, res) => {
 
@@ -43,16 +43,87 @@ export const getCode = asyncHandler(async (req, res) => {
 });
 
 export const getHistory = asyncHandler(async(req,res)=>{
-    const threadId = req.params.thread_id
-    const {_id} = req.user
+    const threadId = req.params.threadId
+  
     if(!threadId ||  threadId==""){
         throw ApiError(404,"Thraed ID not found")
     }
-    const result = await exceutionModel.find({
-        userId:_id,
-        threadId
-    }).sort({createdAt:1}).select("-userId -threadId -iterations -maxiterations -error -createdAt  -updateedAt")
+    // const userId =  req.user
+    const result = await exceutionModel.aggregate([
+        {
+            $match:{
+                threadId:threadId,
+                // userId:userId,
+            }
+        },
+        {
+            $project:{
+                _id:0,
+                jobId:"$executionId",
+                user:"$userprompt",
+                type:1,
+                code:1,
+                agent:"$messages",
+                language:1,
+                result:1,
+                createdAt:1
+
+            }
+        },
+        {
+            $sort:{
+                createdAt:1
+            }
+        }
+
+    ])
     
-    return res.status(200).json(new ApiResponse(200,result,"Data of the perticuar thread"))
+    return res.status(200).json(new ApiResponse(200,result,"Data of the perticular thread"))
+
+})
+
+export const getUserChatData =  asyncHandler(async(req,res)=>{
+    
+    const userId = new mongoose.Types.ObjectId(
+    "6aa97e2d6538bf59ec07f998"
+);
+    
+    if(!userId){
+        throw new ApiError(404,"the userId do not found")
+    }
+    
+    const data  = await  exceutionModel.aggregate([
+        {
+            $match:{
+                userId:userId
+            }
+        },
+        {
+            $sort:{
+                createdAt:-1
+            }
+        },
+        {
+            $group:{
+                _id: "$threadId",
+                userprompt:{$first:"$userprompt"},
+                threadId:{$first:"$threadId"}
+
+            }
+        },
+        {
+            $project:{
+                _id:0,
+                userprompt:1,
+                threadId:1
+            }
+        }
+    ])
+    console.log("hii")
+    console.log(data)
+    return res.status(200).json(
+        new ApiResponse(200,data,"user Chat data")
+    )
+
 
 })

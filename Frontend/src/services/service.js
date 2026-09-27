@@ -9,5 +9,18 @@ const API =  axios.create({
 export const messageRequest = async (userInput)=>{
 
     const {data} = await API.post('/code',{userInput ,threadId:"123456"})
-    console.log(data)
+    
 }
+
+export const getHistory =  async(threadId)=>{
+    const {data} =  await API.get(`/code/${threadId}`)
+    return data.data
+}
+
+export const getUserchatHistory = async()=>{
+    console.log("hii")
+    const {data} = await API.get("/code")
+    console.log(data)
+    return data.data
+}
+

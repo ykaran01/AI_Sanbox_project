@@ -1,151 +1,157 @@
+import React, { useState } from "react";
+import { Copy, Check } from "lucide-react";
+
 export const AgentMessage = ({ message }) => {
-  if (message.status === "processing") {
-    return (
-      <div className="flex items-center gap-2 text-sm text-zinc-400">
-        <div className="w-2 h-2 rounded-full bg-zinc-500 animate-pulse" />
-        <span>Agent is thinking...</span>
-      </div>
-    );
-  }
 
-  if (message.status === "running") {
-    return (
-      <div className="flex items-center gap-2 text-sm text-zinc-400">
-        <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
-        <span>Running code...</span>
-      </div>
-    );
-  }
+  if (message.status === "processing")
+    return <Status text="Agent is thinking..." />;
 
-  if (message.status === "fixing") {
-    return (
-      <div className="flex items-center gap-2 text-sm text-zinc-400">
-        <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-        <span>Fixing code...</span>
-      </div>
-    );
-  }
+  if (message.status === "running")
+    return <Status text="Running code..." />;
+
+  if (message.status === "fixing")
+    return <Status text="Fixing code..." />;
 
   if (message.status === "failed") {
     return (
       <div className="max-w-[90%]">
-        <div className="text-sm text-red-400 mb-2">Execution failed</div>
-        {message.error && (
-          <pre
-            className="
-              bg-[#111114]
-              border
-              border-red-500/20
-              rounded-xl
-              p-4
-              text-sm
-              text-red-300
-              whitespace-pre-wrap
-              break-words
-              overflow-x-auto
-            "
-          >
-            {message.error}
-          </pre>
-        )}
+        <p className="text-sm text-red-400 mb-2">
+          Execution failed
+        </p>
+
+        {message.error && <Output value={message.error} error />}
       </div>
     );
   }
 
-  if (message.status === "completed") {
-    return (
-      <div className="max-w-[90%] space-y-5">
-        <div className="flex items-center gap-2 text-sm text-green-400">
-          <span>
-            {message.type === "code" ? "Code executed successfully" : ""}
-          </span>
-        </div>
 
-        {message.type === "code" && message.code && (
-          <div>
-            <p className="text-xs text-zinc-500 mb-2">Generated code</p>
-            <div className="bg-[#111114] border border-white/10 rounded-xl overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
-                <span className="text-xs text-zinc-400">
-                  {message.language || "Code"}
-                </span>
-                <span className="text-xs text-zinc-600">
-                  Job #{message.jobId}
-                </span>
-              </div>
-              <pre className="p-4 text-sm leading-6 text-zinc-300 overflow-x-auto whitespace-pre">
-                <code>{message.code}</code>
-              </pre>
-            </div>
-          </div>
-        )}
+  if (message.status === "completed" || message.type) {
+    return (
+      <div className="max-w-[90%] space-y-4">
 
         {message.type === "code" && (
-          <div>
-            <p className="text-xs text-zinc-500 mb-2">Output</p>
-            <pre
-              className="
-                bg-black
-                border
-                border-white/10
-                rounded-xl
-                p-4
-                text-sm
-                text-zinc-300
-                whitespace-pre-wrap
-                break-words
-                overflow-x-auto
-              "
-            >
-              {message.result !== undefined &&
-              message.result !== null &&
-              message.result !== ""
-                ? message.result
-                : "No output"}
-            </pre>
-             {message.messages.type=='system' && <pre
-              className="
-                bg-black
-                border
-                border-white/10
-                rounded-xl
-                p-4
-                text-sm
-                text-zinc-300
-                whitespace-pre-wrap
-                break-words
-                overflow-x-auto
-              "
-            >
-              {message.messages.content  || ""}
-            </pre>}
-          </div>
-          
+          <>
+            <div className="text-sm text-green-400">
+              Code executed successfully
+            </div>
+
+            {message.code && (
+              <CodeBlock
+                code={message.code}
+                language={message.language}
+                jobId={message.jobId}
+              />
+            )}
+
+            {message.stdin && (
+              <Output value={message.stdin} title="Input" />
+            )}
+
+            {message.result && (
+              <Output value={message.result} title="Output" />
+            )}
+
+            {message.message && (
+              <Output value={message.message} />
+            )}
+          </>
         )}
 
-        {message.type === "message"    && (
-          <div>
-            <pre
-              className="
-                bg-black
-                border
-                border-white/10
-                rounded-xl
-                p-4
-                text-sm
-                text-zinc-300
-                whitespace-pre-wrap
-                break-words
-                overflow-x-auto
-              "
-            >
-              {message.messages.content  || "No message output"}
-            </pre>
-          </div>
+        {message.type === "message" && message.message && (
+          <Output value={message.message} />
         )}
       </div>
     );
   }
 
   return null;
+};
+
+const Status = ({ text }) => (
+  <div className="flex items-center gap-2 text-sm text-zinc-400">
+    <div className="w-2 h-2 rounded-full bg-zinc-500 animate-pulse" />
+    <span>{text}</span>
+  </div>
+);
+
+
+const Output = ({ value, title, error = false }) => (
+  <div>
+    {title && (
+      <p className="text-xs text-zinc-500 mb-2">
+        {title}
+      </p>
+    )}
+
+    <pre
+      className={`
+        bg-[#111114]
+        border
+        rounded-xl
+        p-4
+        text-sm
+        whitespace-pre-wrap
+        break-words
+        overflow-x-auto
+        ${error
+          ? "border-red-500/20 text-red-300"
+          : "border-white/10 text-zinc-300"}
+      `}
+    >
+      {value}
+    </pre>
+  </div>
+);
+
+
+const CodeBlock = ({ code, language, jobId }) => {
+
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code || "");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error("Copy failed:", err);
+    }
+  };
+
+  return (
+    <div>
+      <p className="text-xs text-zinc-500 mb-2">
+        Generated code
+      </p>
+
+      <div className="bg-[#111114] border border-white/10 rounded-xl overflow-hidden">
+
+        <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
+          <span className="text-xs text-zinc-400">
+            {language || "Code"}
+          </span>
+
+          <div className="flex items-center gap-3">
+            {jobId && (
+              <span className="text-xs text-zinc-600">
+                Job #{jobId}
+              </span>
+            )}
+
+            <button
+              onClick={handleCopy}
+              className="text-zinc-500 hover:text-zinc-300 transition"
+              title="Copy code"
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+            </button>
+          </div>
+        </div>
+
+        <pre className="p-4 text-sm leading-6 text-zinc-300 overflow-x-auto whitespace-pre">
+          <code>{code}</code>
+        </pre>
+      </div>
+    </div>
+  );
 };

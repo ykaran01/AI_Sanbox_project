@@ -38,7 +38,10 @@ const executionSchema = new mongoose.Schema(
             ],
             default: "",
         },
-
+        userprompt:{
+                type: String,
+                required: true,
+        },
         code: {
             type: String,
             default: "",
@@ -49,21 +52,9 @@ const executionSchema = new mongoose.Schema(
         },
 
         messages: {
-            type: [
-                {
-                    type: {
-                        type: String,
-                        enum: ["human", "ai", "system", "tool"],
-                    },
-                    content: {
-                        type: String,
-                        default: "",
-                    },
-                },
-            ],
-            default: [],
+            type:String
         },
-        
+         
         success: {
             type: Boolean,
             default: false,
@@ -79,15 +70,14 @@ const executionSchema = new mongoose.Schema(
             default: 0,
         },
 
-        error: {
-            type: String,
-            default: null,
-        },
+        
     },
     {
         timestamps: true,
     }
 );
+
+
 
 export const exceutionModel = mongoose.model(
     "Execution",

@@ -6,15 +6,23 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Settings, Plus } from "lucide-react";
+import { getUserchatHistory } from "@/services/service";
+import { useEffect  ,useState} from "react";
+
 
 export function AppSidebar() {
-  const exampleTasks = [
-    "Build a REST API with Express",
-    "Fix this JavaScript error",
-    "Create a binary search solution",
-    "Write a Python web scraper",
-    "Implement JWT authentication",
-  ];
+
+  const [exampleTasks, setexampleTasks] = useState([])
+
+  useEffect(()=>{
+
+    const func = async()=>{
+
+      const data =  await  getUserchatHistory()
+      setexampleTasks(data)
+    }
+    func()
+  },[])
 
   return (
     <Sidebar className="bg-zinc-950">
@@ -42,10 +50,11 @@ export function AppSidebar() {
               {exampleTasks.map((task, index) => (
                 <button
                   key={index}
-                  className="w-full text-left px-3 py-2 rounded-lg text-xs text-zinc-400 hover:bg-zinc-900 hover:text-white transition"
+                  value={task.threadId}
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs  truncate text-zinc-400 hover:bg-zinc-900 hover:text-white transition"
                 >
 
-                  {task}
+                  {task.userprompt}
             
             
                 </button>
