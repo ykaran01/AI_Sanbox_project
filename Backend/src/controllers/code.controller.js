@@ -87,7 +87,7 @@ export const getUserChatData =  asyncHandler(async(req,res)=>{
     const userId = new mongoose.Types.ObjectId(
     "6aa97e2d6538bf59ec07f998"
 );
-    
+    // const userId =  new mongoose.Types.ObjectId(req.user)
     if(!userId){
         throw new ApiError(404,"the userId do not found")
     }
@@ -119,7 +119,7 @@ export const getUserChatData =  asyncHandler(async(req,res)=>{
             }
         }
     ])
-    console.log("hii")
+   
     console.log(data)
     return res.status(200).json(
         new ApiResponse(200,data,"user Chat data")

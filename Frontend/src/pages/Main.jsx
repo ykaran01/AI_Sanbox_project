@@ -1,19 +1,20 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState ,useContext} from "react";
 import { ArrowUp } from "lucide-react";
-
+import { UserConetxt } from "./UserProvider.jsx";
 import { Textarea } from "@/components/ui/textarea";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-
 import { socket } from "../websocket/socket.config.js";
 import { messageRequest, getHistory } from "../services/service.js";
-
 import { AgentMessage } from "./extra.jsx";
-
+import { useParams } from "react-router-dom";
 
 const THREAD_ID = "123456";
 
 const Main = () => {
-
+  
+  const data =  useContext(UserConetxt)
+  // const {threadId} = useParams()
+  //const  THREAD_ID = THREAD_ID
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
 
@@ -29,25 +30,19 @@ const Main = () => {
       try {
 
         setLoadingHistory(true);
-
         const response = await getHistory(THREAD_ID);
-
         const executions = response || [];
-        
-
         const history = [];
-
         executions.forEach((execution) => {
           if (execution.user) {
-
             history.push({
               id: `user-${execution.jobId}`,
               role: "user",
               type: "user",
               content: execution.user,
             });
-
           }
+
           history.push({
 
             id: `agent-${execution.jobId}`,
@@ -62,17 +57,12 @@ const Main = () => {
           });
 
         });
-
-
         setMessages(history);
-
       } catch (error) {
-
         console.error(
           "Failed to load chat history:",
           error
         );
-
       } finally {
         setLoadingHistory(false);
       }
@@ -82,118 +72,82 @@ const Main = () => {
   }, []);
 
   useEffect(() => {
-
     const handleConnect = () => {
-
       console.log(
         "Connected:",
         socket.id
       );
-
       socket.emit(
         "joinThread",
         THREAD_ID
       );
     };
-
-
     const handleJobUpdate = (message) => {
-
       console.log(
         "JOB UPDATE:",
         message
       );
-
-
       setMessages((prev) => {
-
         const index = prev.findIndex(
           (item) =>
             String(item.jobId) ===
             String(message.jobId)
         );
-
-
         const updatedMsg = {
           role: "agent",
           ...message,
         };
-
-
         if (index !== -1) {
-
           const updated = [...prev];
-
           updated[index] = {
             ...updated[index],
             ...updatedMsg,
           };
-
           return updated;
         }
-
-
         return [
           ...prev,
           updatedMsg,
         ];
       });
     };
-
-
     socket.on(
       "connect",
       handleConnect
     );
-
     socket.on(
       "jobUpdate",
       handleJobUpdate
     );
-
-
     if (socket.connected) {
       handleConnect();
     }
-
-
     return () => {
-
       socket.off(
         "connect",
         handleConnect
       );
-
       socket.off(
         "jobUpdate",
         handleJobUpdate
       );
-
     };
-
   }, []);
 
-  useEffect(() => {
 
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth",
     });
-
   }, [messages]);
 
   const requestMessage = async () => {
-
     const userInput = input.trim();
-
     if (!userInput || sending) {
       return;
     }
-
-
     setMessages((prev) => [
-
       ...prev,
-
       {
         id: `user-${Date.now()}`,
         role: "user",
@@ -202,52 +156,34 @@ const Main = () => {
       },
 
     ]);
-
-
     setInput("");
     setSending(true);
-
-
     try {
-
       await messageRequest(
         userInput
       );
 
     } catch (error) {
-
       console.error(
         "Message request failed:",
         error
       );
-
-
       setMessages((prev) => [
-
         ...prev,
-
         {
           id: `error-${Date.now()}`,
-
           role: "agent",
-
           status: "failed",
-
           error:
             error?.response?.data?.message ||
             error?.message ||
             "Something went wrong while sending the request.",
         },
-
       ]);
-
     } finally {
-
       setSending(false);
-
     }
   };
-
   const handleKeyDown = (e) => {
 
     if (
@@ -396,14 +332,6 @@ const Main = () => {
               </div>
 
             </div>
-
-
-            <p className="text-center text-xs text-zinc-600 mt-2">
-
-              Agent can generate and execute code
-
-            </p>
-
           </div>
 
         </div>
