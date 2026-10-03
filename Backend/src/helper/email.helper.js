@@ -1,4 +1,4 @@
-import {breavo} from "../config/email.config"
+import {breavo} from "../config/email.config.js"
 
 export const sendMail = async(emailAddress,otp)=>{
 

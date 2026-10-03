@@ -14,7 +14,7 @@ const Otp = ({Open,setisOpen,email}) => {
   const navigate =  useNavigate()
   const [otp, setotp] = useState("")
   const handleSubmit  = async(e)=>{
-    e.preventDefault()
+    
     if(!otp || otp.length!==6){
       return;
     }

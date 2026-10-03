@@ -8,13 +8,14 @@ import { messageRequest, getHistory } from "../services/service.js";
 import { AgentMessage } from "./extra.jsx";
 import { useParams } from "react-router-dom";
 
-const THREAD_ID = "123456";
+
 
 const Main = () => {
   
   const data =  useContext(UserConetxt)
-  // const {threadId} = useParams()
-  //const  THREAD_ID = THREAD_ID
+  const {threadId} = useParams()
+  const  THREAD_ID = threadId
+  
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
 
@@ -160,7 +161,7 @@ const Main = () => {
     setSending(true);
     try {
       await messageRequest(
-        userInput
+        userInput,THREAD_ID
       );
 
     } catch (error) {
@@ -229,7 +230,7 @@ const Main = () => {
                 <div className="flex flex-col items-center justify-center h-[70vh]">
 
                   <h1 className="text-3xl font-semibold">
-                    Hey Karan 👋
+                    Hey {data?.user?.username} 👋
                   </h1>
 
                   <p className="text-zinc-500 mt-2">

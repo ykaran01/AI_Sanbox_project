@@ -10,6 +10,7 @@ import {
 import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { change, sendEmail, verifyOtp } from "@/services/service";
 
 const Forgetpassword = ({ open, setOpen }) => {
   const [email, setEmail] = useState("");
@@ -18,20 +19,38 @@ const Forgetpassword = ({ open, setOpen }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [step, setStep] = useState(1);
 
-  const handleSendOtp = (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
     if (!email) return;
-    setStep(2);
+    try {
+      const data = await sendEmail(email)
+      if (data) {
+        setStep(2);
+      } 
+    }
+    catch (err) {
+      console.log(err.message)
+      setOpen(false)
+    }
+
   };
 
-  const handleVerifyOtp = (e) => {
+  const handleVerifyOtp = async (e) => {
     e.preventDefault();
     if (otp.length !== 6) return;
-    console.log("OTP verified");
-    setStep(3);
+    try {
+      const data = await verifyOtp(otp, email)
+      if (data) {
+        setStep(3);
+      } 
+    }
+    catch (err) {
+      console.log(err.message)
+      setOpen(false)
+    }
   };
 
-  const handleResetPassword = (e) => {
+  const handleResetPassword = async(e) => {
     e.preventDefault();
     if (!password || !confirmPassword) return;
 
@@ -40,13 +59,23 @@ const Forgetpassword = ({ open, setOpen }) => {
       return;
     }
 
-    console.log("Password reset successfully");
-    setOpen(false);
-    setStep(1);
-    setEmail("");
-    setOtp("");
-    setPassword("");
-    setConfirmPassword("");
+    try {
+      const data = await change(password)
+      if (data) {
+        setStep(2);
+        setOpen(false);
+        setStep(1);
+        setEmail("");
+        setOtp("");
+        setPassword("");
+        setConfirmPassword("");
+      } 
+    }
+    catch (err) {
+    
+      setOpen(false)
+    }
+
   };
 
   return (

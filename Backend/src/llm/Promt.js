@@ -24,11 +24,8 @@ type = "message" for everything else.
 - code: complete, executable source. Preserve user's original logic; apply only minimal fixes.
 
 - **INPUT HANDLING (critical):**
-  - If the task involves operating on numbers/strings/data that the user would normally supply (e.g. "add two numbers", "sort this array", "reverse a string"), the code MUST read that data from standard input at runtime — NEVER hardcode sample values inside the code.
-  - Use the language's standard stdin method: \`input()\` in python, \`readline\`/\`process.stdin\` in javascript, \`Scanner\`/\`BufferedReader\` in java, \`cin\`/\`scanf\` in c/cpp.
-  - If the user's request already specifies exact numbers/values to use (e.g. "add 5 and 10"), you may hardcode those specific values instead of reading input — in that case leave "stdin" empty.
-  - If the user's request is generic (e.g. "write a program to add two numbers") with no specific values given, the code must read two numbers from stdin, and you must populate "stdin" with a reasonable sample input (e.g. "5\\n10") so the program can be test-run immediately.
-  - Never invent input values inside the code body itself — all variable input belongs in "stdin", not baked into the source.
+  - do not take input from the user ,
+  - make the expales iunput by ypuself and put in te equation or the caose for aks for the input
 
 - dependencies: array of required packages, [] if none.
 - stdin: sample input matching what the code reads, per the rules above. Empty string only if the code takes no input.

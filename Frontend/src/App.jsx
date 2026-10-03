@@ -5,7 +5,8 @@ import Main from "./pages/Main";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Layout from "./pages/SidebarWrapper";
-import NewChat from "helper/NewChat";
+import NewChat from "@/pages/NewChat";
+import { Outlet } from "react-router-dom";
 const App = () => {
 
   const Protected = () => {

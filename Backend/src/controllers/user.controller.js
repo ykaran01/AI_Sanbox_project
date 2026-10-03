@@ -1,4 +1,4 @@
-import { OTP, OTP, generaeteAccesstokenAndRefrehToken } from "../helper/helperFunction.js";
+import { OTP, generaeteAccesstokenAndRefrehToken } from "../helper/helperFunction.js";
 import { User } from "../models/user.module.js";
 import { ApiError } from "../utils/Apierror.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
@@ -339,53 +339,58 @@ export const logout = asyncHandler(async (req, res) => {
         );
 });
 
-export const changepassword =  asyncHandler(async(req,res)=>{
-    const {newpassword} = req.body
-    if(!redisConnection.get(`${req.user.email}`)==1){
-        throw new ApiError(401,"Unauthorised")
+export const changepassword = asyncHandler(async (req, res) => {
+    const { newpassword } = req.body
+    const verified = await redisConnection.get(req.user.email);
+
+    if (verified !== "1") {
+        throw new ApiError(401, "Unauthorised");
     }
-    const password = await bcrypt.hash(newpassword,12)
-     await User.findOneAndUpdate({
-        _id:req.user._id
-    },{
-        $set:{password:password}
+    const password = await bcrypt.hash(newpassword, 12)
+    await User.findOneAndUpdate({
+        _id: req.user._id
+    }, {
+        $set: { password: password }
     })
 
     await redisConnection.del(`${req.user.email}`)
-    res.status(200).json(new ApiResponse(200,null,"Password Change successfully"))
+    res.status(200).json(new ApiResponse(200, null, "Password Change successfully"))
 
 
 })
 
-export const sendingOtP = asyncHandler(async(req,res)=>{
-        
-    const {email} = req.body
-    if(!email){
-          throw new ApiError(404,"email Not found")
+export const sendingOTP = asyncHandler(async (req, res) => {
+    const { email } = req.body
+    if (!email) {
+        throw new ApiError(404, "email Not found")
     }
-    const user =  await User.findOne({email:email})
-    if(!user){
-        throw new ApiError(401,"Unauthorised")
+    const user = await User.findOne({ email: email })
+    if (!user) {
+        throw new ApiError(401, "Unauthorised")
     }
-    const OTP = OTP()
-    await sendMail(email,OTP)
-    redisConnection.set(email,OTP)
-    redisConnection.ttl(email,5*60)
-    res.status(200).json(new ApiResponse(200,null,"OTP sent"))
+    const Otp = OTP()
+    await sendMail(email, Otp)
+    await redisConnection.set(email, Otp,{
+        EX:5*60
+    })
+   
+    res.status(200).json(new ApiResponse(200, null, "OTP sent"))
 
 })
 
-export const verifying = asyncHandler(async(req,res)=>{
-    const {otp,email} = req.body
+export const verifying = asyncHandler(async (req, res) => {
+    const { otp, email } = req.body
+
+    const getOtp =  await redisConnection.get(email)
+    if (!getOtp) {
+        throw new ApiError(401, "OTP not found")
+    }
+    if (otp !== getOtp) {
+        throw new ApiError(401, "OTP not Correct")
+    }
+    redisConnection.set(email, 1,{
+        EX:5*60
+    })
     
-    const getOtp = redisConnection.get(email)
-    if(getOtp){
-        throw new ApiError(401,"OTP not found")
-    }
-    if(otp!==getOtp){
-        throw new ApiError(401,"OTP not Correct")
-    }
-    redisConnection.set(email,1)
-    redisConnection.ttl(email,5*60)
-    res.status(200).json(new ApiResponse(200,null,"OTP is correct"))
+    res.status(200).json(new ApiResponse(200, null, "OTP is correct"))
 })

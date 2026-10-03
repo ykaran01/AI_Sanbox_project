@@ -10,9 +10,14 @@ import { getUserchatHistory } from "@/services/service";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useNavigate } from "react-router-dom";
+import { UserConetxt } from "./UserProvider.jsx";
+import { useContext } from "react"
 export function AppSidebar() {
-  const naviagate =  useNavigate()
+  const navigate =  useNavigate()
   const [exampleTasks, setexampleTasks] = useState([])
+  const {user} =  useContext(UserConetxt)
+ 
+
 
   useEffect(() => {
 
@@ -55,6 +60,9 @@ export function AppSidebar() {
                 <button
                   key={index}
                   value={task.threadId}
+                  onClick={()=>{
+                    navigate(`chat/${task.threadId}`)
+                  }}
                   className="w-full text-left px-3 py-2 rounded-lg text-xs  truncate text-zinc-400 hover:bg-zinc-900 hover:text-white transition"
                 >
                   {task.userprompt}
@@ -69,12 +77,12 @@ export function AppSidebar() {
         <button className="flex w-full bg-zinc-800 p-2 rounded-2xl gap-4 items-center">
           <div className="" >
           <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarImage src="" />
+            <AvatarFallback>{user?.name.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
             </div>
           <div className="text-white text-sm">
-           <p>Vincky </p>   
+           <p>{user?.username} </p>   
           </div>
         </button>
 
