@@ -39,7 +39,7 @@ export const puttingInputInQueue = async (input) => {
         iteration: 0,
     });
 
-    console.log(`Job ${job.id} added to queue`);
+    
 
     return job.id;
 };
@@ -99,7 +99,7 @@ export const worker = new Worker(
             }
         );
 
-        console.log("LangGraph result:", result);
+        
         const finalJob = result.job || {};
 
         const messages = finalJob.message 
@@ -139,10 +139,7 @@ export const worker = new Worker(
             );
 
 
-        console.log(
-            "Execution saved:",
-            updatedExecution
-        );
+        
 
         await publiser.publish(
             `thread:${threadId}`,
@@ -177,11 +174,7 @@ export const worker = new Worker(
 
 worker.on("failed", async (job, error) => {
 
-    console.error(
-        `Job ${job?.id} failed:`,
-        error.message
-    );
-
+   
 
     if (!job) return;
 

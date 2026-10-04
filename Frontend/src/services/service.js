@@ -69,9 +69,9 @@ export const loginUser = async(info,setuserdata)=>{
     try{
        
         const {data} = await  API.post('/user/login',info)
-        if(data.statsCode==200 || data.data.status==200 || data.success){
+        if(data.status==200 || data.data.status==200 || data.success){
             const {data} =   await API.get('/user/me')
-            setuserdata(data)
+            setuserdata(data.data)
             return true;
         
         }
@@ -119,6 +119,34 @@ export const change = async(newpassword)=>{
         console.log(err.response?.data?.message)
         throw new Error(err.response?.data?.message || "Something Went Wrong")
     }
+}
+
+export const logout = async(setuserdata)=>{
+    try{
+        
+        const {data} = await API.post('/user/logout')
+        if(data.status===200 || data.data.status===200){
+            setuserdata(null)
+            return true;
+        }
+        return false;
+
+    }catch(err){
+         console.log(err.response?.data?.message)
+        throw new Error(err.response?.data?.message || "Something Went Wrong")
+    }
+}
+
+export const deleteChat = async(threadId)=>{
+    try{
+        const {data } = await API.delete('code',{data:{threadId}})
+        if(data.status===200 || data.data.status===200){
+            return true
+        }
+    }catch(err){
+        console.log(err.response?.data?.messsage)
+    }
+    
 }
 
 

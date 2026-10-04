@@ -30,11 +30,6 @@ const userSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
     },
-    avatar: {
-        type: String,
-        default:"https://img.magnific.com/premium-vector/user-icon-flat-style_162100-1423.jpg?semt=ais_hybrid&w=740&q=80"
-
-    },
     isVerified: {
         type: Boolean,
         default: false

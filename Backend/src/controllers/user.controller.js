@@ -3,7 +3,6 @@ import { User } from "../models/user.module.js";
 import { ApiError } from "../utils/Apierror.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import { ApiResponse } from "../utils/ApiResponse.utils.js";
-// import { uploadOnCloudnary } from "../Util/cloudnary.js";
 import { sendMail } from "../helper/email.helper.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -107,10 +106,11 @@ export const verifyUser = asyncHandler(async (req, res) => {
 });
 
 export const loginUser = asyncHandler(async (req, res) => {
+    
     const { email, password } = req.body;
-
+    
     const user = await User.findOne({ email });
-
+    
     if (!user) {
         throw new ApiError(401, "Invalid email or password");
     }
@@ -162,58 +162,50 @@ export const loginUser = asyncHandler(async (req, res) => {
         );
 });
 
-// export const addOrUpdateAvatar = asyncHandler(async (req, res) => {
-//     const { _id } = req.user;
-
-//     if (!req.file) {
-//         throw new ApiError(400, "Avatar file is required");
-//     }
-
-//     const uploadedImage = await uploadOnCloudnary(req.file.buffer);
-
-//     if (!uploadedImage?.secure_url) {
-//         throw new ApiError(500, "Failed to upload avatar");
-//     }
-
-//     const user = await User.findByIdAndUpdate(
-//         _id,
-//         {
-//             $set: {
-//                 avatar: uploadedImage.secure_url
-//             }
-//         },
-//         {
-//             new: true,
-//             runValidators: true
-//         }
-//     );
-
-//     if (!user) {
-//         throw new ApiError(404, "User not found");
-//     }
-
-//     res.status(200).json(
-//         new ApiResponse(
-//             200,
-//             { avatar: user.avatar },
-//             "Avatar updated successfully"
-//         )
-//     );
-// });
-
 export const getUser = asyncHandler(async (req, res) => {
+
     const { _id } = req.user;
 
-    const user = await User.findById(_id).select(
-        "-verifyOTP -expireOTP -password -refreshToken"
+    const userId = _id.toString();
+
+  
+    const cachedUser = await redisConnection.get(userId);
+
+    if (cachedUser) {
+
+        const actualData = JSON.parse(cachedUser);
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                actualData,
+                "User fetched successfully"
+            )
+        );
+    }
+
+  
+    const user = await User.findById(userId).select(
+        "-verifyOTP -expireOTP -password -refreshToken -email -_id"
     );
 
     if (!user) {
         throw new ApiError(404, "User not found");
     }
 
-    res.status(200).json(
-        new ApiResponse(200, user, "User fetched successfully")
+    await redisConnection.set(
+    userId,
+    JSON.stringify(user),
+    "EX",
+    5 * 60
+);
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            user,
+            "User fetched successfully"
+        )
     );
 });
 
@@ -304,7 +296,7 @@ export const changeName = asyncHandler(async (req, res) => {
 
 export const logout = asyncHandler(async (req, res) => {
     const { _id } = req.user;
-
+    
     const user = await User.findByIdAndUpdate(
         _id,
         {
@@ -322,9 +314,9 @@ export const logout = asyncHandler(async (req, res) => {
     }
 
     const options = {
-        sameSite: "none",
-        secure: true,
-        httpOnly: true
+        // sameSite: "none",
+        // secure: true,
+        // httpOnly: true
     };
 
     res.clearCookie("refreshToken", options)
@@ -339,7 +331,7 @@ export const logout = asyncHandler(async (req, res) => {
         );
 });
 
-export const changepassword = asyncHandler(async (req, res) => {
+export const changepassword = asyncHandler(async (req, res) => { 
     const { newpassword } = req.body
     const verified = await redisConnection.get(req.user.email);
 
@@ -353,7 +345,7 @@ export const changepassword = asyncHandler(async (req, res) => {
         $set: { password: password }
     })
 
-    await redisConnection.del(`${req.user.email}`)
+    await redisConnection.del(req.user.email)
     res.status(200).json(new ApiResponse(200, null, "Password Change successfully"))
 
 
@@ -370,9 +362,7 @@ export const sendingOTP = asyncHandler(async (req, res) => {
     }
     const Otp = OTP()
     await sendMail(email, Otp)
-    await redisConnection.set(email, Otp,{
-        EX:5*60
-    })
+    await redisConnection.set(email, Otp,"EX",5*60)
    
     res.status(200).json(new ApiResponse(200, null, "OTP sent"))
 
@@ -388,9 +378,9 @@ export const verifying = asyncHandler(async (req, res) => {
     if (otp !== getOtp) {
         throw new ApiError(401, "OTP not Correct")
     }
-    redisConnection.set(email, 1,{
-        EX:5*60
-    })
+    await redisConnection.set(email, 1,
+        "EX",5*60
+    )
     
     res.status(200).json(new ApiResponse(200, null, "OTP is correct"))
 })

@@ -1,15 +1,12 @@
-
 import { ChatGroq } from "@langchain/groq";
 import { z } from "zod";
 import {
     SystemMessage,
-    HumanMessage,
     AIMessage,
 } from "@langchain/core/messages";
 
 import { systemPrompt, fixerPrompt } from "./Promt.js";
 import { publiser } from "../db/connetDB.js";
-
 
 const CodeResponseSchema = z.object({
     type: z.enum(["code", "message"]),
@@ -30,7 +27,6 @@ const model = new ChatGroq({
     temperature: 0,
 });
 
-
 const structuredModel = model.withStructuredOutput(
     CodeResponseSchema
 );
@@ -46,7 +42,6 @@ const normalizeCode = (code) => {
         .replace(/\\r/g, "\n");
 };
 
-
 const normalizeStdin = (stdin) => {
     if (typeof stdin !== "string") {
         return "";
@@ -57,7 +52,6 @@ const normalizeStdin = (stdin) => {
         .replace(/\\n/g, "\n")
         .replace(/\\r/g, "\n");
 };
-
 
 export const invokeModel = async (state) => {
     try {
@@ -80,25 +74,13 @@ export const invokeModel = async (state) => {
         const result = await structuredModel.invoke(messages);
 
 
-        console.log("LLM RESULT:");
-        console.log(result);
-
-        console.log("CODE:");
-        console.log(result.code);
-
-        console.log("CODE JSON:");
-        console.log(JSON.stringify(result.code));
 
 
         const code = normalizeCode(result.code);
         const stdin = normalizeStdin(result.stdin);
 
 
-        console.log("NORMALIZED CODE:");
-        console.log(code);
 
-        console.log("NORMALIZED CODE JSON:");
-        console.log(JSON.stringify(code));
 
 
         return {
@@ -127,11 +109,7 @@ export const invokeModel = async (state) => {
 
     } catch (error) {
 
-        console.error(
-            "LLM Error in invokeModel:",
-            error
-        );
-
+      
         return {
             job: {
                 ...state.job,
@@ -149,7 +127,6 @@ export const invokeModel = async (state) => {
         };
     }
 };
-
 
 export const codeFixer = async (state) => {
     try {
@@ -177,7 +154,7 @@ export const codeFixer = async (state) => {
         const code = normalizeCode(result.code);
 
 
-        console.log("NORMALIZED FIXED CODE:");
+      
 
 
         return {
@@ -201,10 +178,7 @@ export const codeFixer = async (state) => {
 
     } catch (error) {
 
-        console.error(
-            "LLM Error in codeFixer:",
-            error
-        );
+        
 
         return {
             job: {

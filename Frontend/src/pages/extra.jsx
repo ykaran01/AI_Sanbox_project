@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Copy, Check } from "lucide-react";
 
@@ -82,7 +81,6 @@ export const AgentMessage = ({ message }) => {
     return null;
 };
 
-
 const Status = ({ text }) => {
     return (
         <div className="flex items-center gap-2 text-sm text-zinc-400">
@@ -94,7 +92,6 @@ const Status = ({ text }) => {
         </div>
     );
 };
-
 
 const Output = ({ value, title, error = false }) => {
     const formattedValue = normalizeText(value);
@@ -117,6 +114,9 @@ const Output = ({ value, title, error = false }) => {
                     whitespace-pre-wrap
                     break-words
                     overflow-x-auto
+                    ${
+                        title=="Output"?"truncate  max-h-20 ":""
+                    }
                     ${error
                         ? "border-red-500/20 text-red-300"
                         : "border-white/10 text-zinc-300"
@@ -128,7 +128,6 @@ const Output = ({ value, title, error = false }) => {
         </div>
     );
 };
-
 
 const CodeBlock = ({ code, language, jobId }) => {
     const [copied, setCopied] = useState(false);
@@ -198,8 +197,6 @@ const CodeBlock = ({ code, language, jobId }) => {
         </div>
     );
 };
-
-
 
 
 const normalizeCode = (value) => {

@@ -84,10 +84,8 @@ export const getHistory = asyncHandler(async(req,res)=>{
 
 export const getUserChatData =  asyncHandler(async(req,res)=>{
     
-    const userId = new mongoose.Types.ObjectId(
-    "6aa97e2d6538bf59ec07f998"
-);
-    // const userId =  new mongoose.Types.ObjectId(req.user)
+
+    const userId =  new mongoose.Types.ObjectId(req.user._id)
     if(!userId){
         throw new ApiError(404,"the userId do not found")
     }
@@ -120,10 +118,27 @@ export const getUserChatData =  asyncHandler(async(req,res)=>{
         }
     ])
    
-    console.log(data)
+   
     return res.status(200).json(
         new ApiResponse(200,data,"user Chat data")
     )
 
 
+})
+
+export const deleteChat = asyncHandler(async(req,res)=>{
+   
+    const {_id} = req.user
+    
+    const {threadId} = req.body
+    
+    if(!threadId){
+        throw new ApiError(404,"thread Id is misssing")
+    }
+     await exceutionModel.deleteMany({
+        userId:_id,
+        threadId
+    })
+    res.status(200).json(new ApiResponse(200,null,"deleted Successfully"))
+    
 })

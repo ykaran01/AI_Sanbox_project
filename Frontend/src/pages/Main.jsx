@@ -8,14 +8,10 @@ import { messageRequest, getHistory } from "../services/service.js";
 import { AgentMessage } from "./extra.jsx";
 import { useParams } from "react-router-dom";
 
-
-
 const Main = () => {
-  
   const data =  useContext(UserConetxt)
   const {threadId} = useParams()
   const  THREAD_ID = threadId
-  
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
 
@@ -70,7 +66,7 @@ const Main = () => {
     };
     loadHistory();
 
-  }, []);
+  }, [threadId]);
 
   useEffect(() => {
     const handleConnect = () => {
@@ -185,6 +181,7 @@ const Main = () => {
       setSending(false);
     }
   };
+
   const handleKeyDown = (e) => {
 
     if (
@@ -198,6 +195,7 @@ const Main = () => {
     }
 
   };
+  
   return (
 
     <div className="min-h-screen bg-[#09090b] text-white flex">
@@ -230,7 +228,7 @@ const Main = () => {
                 <div className="flex flex-col items-center justify-center h-[70vh]">
 
                   <h1 className="text-3xl font-semibold">
-                    Hey {data?.user?.username} 👋
+                    Hey {data?.user?.username} 
                   </h1>
 
                   <p className="text-zinc-500 mt-2">
@@ -279,14 +277,9 @@ const Main = () => {
 
                 )
               )}
-
-
               <div ref={messagesEndRef} />
-
             </div>
-
           </div>
-
         </div>
         <div className="px-6 pb-5">
 
@@ -311,34 +304,22 @@ const Main = () => {
                 className="min-h-[60px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 text-sm px-4 pt-4 disabled:opacity-60"
               />
 
-
               <div className="flex justify-end p-3">
-
                 <button
-
                   onClick={requestMessage}
-
                   disabled={
                     !input.trim() ||
                     sending
                   }
-
                   className="h-8 w-8 rounded-full bg-white text-black flex items-center justify-center hover:bg-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
                 >
-
                   <ArrowUp size={15} />
-
                 </button>
-
               </div>
-
             </div>
           </div>
-
         </div>
-
       </main>
-
     </div>
   );
 };

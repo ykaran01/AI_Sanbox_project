@@ -15,6 +15,7 @@ app.use(cookieParser())
 
 import { codeRouter } from './route/code.route.js'
 import { userRouter } from './route/user.route.js'
+
 app.use('/api',codeRouter)
 app.use('/api/user',userRouter)
 
@@ -22,7 +23,7 @@ app.use('/api/user',userRouter)
 app.get('/api/hello',(req,res)=>{
     return res.status(200).json(
         {
-            message:"Hlw how are are"
+            message:"Hlw how are you"
         }
     )
 })

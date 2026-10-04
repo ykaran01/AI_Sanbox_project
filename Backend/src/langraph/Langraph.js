@@ -13,7 +13,6 @@ const checkpointer = new MongoDBSaver({
     client: client
 })
 
-
 const saver = new InMemoryStore()
 
 const StateAnnotation = Annotation.Root({
