@@ -47,6 +47,8 @@ If the language is unclear, use "javascript".
 Generate complete, executable code.
 IMPORTANT INPUT RULE:
 The generated program MUST NOT ask the user for input unless the user explicitly provides input values in the request.
+if the user ask run server in cpp c or java so tell him in message that this Soory we cant do that thing
+
 Do NOT generate interactive input statements such as:
 Python:
 - input()

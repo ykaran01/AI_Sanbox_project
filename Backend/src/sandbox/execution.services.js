@@ -146,7 +146,6 @@ const runDocker = (args, input = "", timeout = TIMEOUT) =>
         docker.stdin.end(input);
 });
 
-
 const executeCode = async (state) => {
     const { language, code, executionId } = state.job;
     const { threadId } = state;
