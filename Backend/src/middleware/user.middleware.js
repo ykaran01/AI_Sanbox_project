@@ -15,3 +15,17 @@ export const userMiddleware = asyncHandler(async(req,res,next)=>{
     req.user =  user;
     next()
 })
+
+export const adminMiddlware =  asyncHandler(async(req,res)=>{
+    const token =  req.cookies?.accessToken
+    if(!token){
+        throw ApiError(404,"Token does not found")
+    }
+    const user = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET)
+    if(!user || user?.email!==process.env.ADMIN_EMAIL){
+        throw new ApiError(401,"Unauthorized")
+    }
+    req.user= user
+    next()
+
+})

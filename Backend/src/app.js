@@ -2,8 +2,10 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 export const app = express()
-
-
+import { connectDB } from './db/connetDB.js'
+await connectDB()
+// import "../src/Queue/worker.js"
+import "../workerManager.js"
 app.use(express.json())
 
 app.use(cors({

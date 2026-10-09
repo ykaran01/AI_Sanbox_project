@@ -10,7 +10,6 @@ export const routeAfterExecution = (state) => {
     return "fix";
 };
 
-
 export const routeFortheCode = (state) => {
     if (state.job.type === "message") {
         state.job.success = true

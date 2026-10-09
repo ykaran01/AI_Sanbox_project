@@ -20,7 +20,7 @@ export const sendMail = async (emailAddress, otp) => {
         </p>
     </div>
 `,
-            sender: { name: 'Agent', email: process.env.ADMIN_EMAIL },
+            sender: { name: 'Box_Agent', email: process.env.ADMIN_EMAIL },
             to: [{ email: emailAddress }]
         })
         return result

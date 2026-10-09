@@ -6,6 +6,7 @@ import { InMemoryStore, } from "@langchain/langgraph"
 import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb"
 import { MongoClient } from "mongodb"
 import "dotenv/config"
+
 const client = new MongoClient(process.env.MONGODB_URL)
 
 await client.connect()

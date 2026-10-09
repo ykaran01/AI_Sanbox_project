@@ -14,7 +14,7 @@ export const runtimes = {
     },
 
     python: {
-        image: "python:3.13-alpine",
+        image: "python:3.13-slim",
         sourceFile: "main.py",
         compile: null,
         run: "python main.py"
@@ -44,7 +44,7 @@ export const getTheDownload = (dependency, language) => {
     if (language !== "javascript" && language !== "python") {
         return "";
     }
-    console.log(dependency,language)
+    
 
     const validator = /^[a-zA-Z0-9_.@/-]+$/;
 

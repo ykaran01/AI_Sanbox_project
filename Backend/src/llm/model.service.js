@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config()
 import { ChatGroq } from "@langchain/groq";
 import { z } from "zod";
 import {
@@ -10,19 +12,14 @@ import { publiser } from "../db/connetDB.js";
 
 const CodeResponseSchema = z.object({
     type: z.enum(["code", "message"]),
-
     language: z.string(),
-
     code: z.string(),
-
     dependencies: z.array(z.string()),
-
     stdin: z.string(),
-
     message: z.string(),
 });
 const model = new ChatGroq({
-    apiKey: process.env.GROCK_TOKEN,
+    apiKey: process.env.GROQ_API_KEY,
     model: "openai/gpt-oss-120b",
     temperature: 0,
 });
@@ -70,33 +67,18 @@ export const invokeModel = async (state) => {
             })
         );
 
-
         const result = await structuredModel.invoke(messages);
-
-
-
-
         const code = normalizeCode(result.code);
         const stdin = normalizeStdin(result.stdin);
-
-
-
-
 
         return {
             job: {
                 ...state.job,
-
                 type: result.type,
-
                 language: result.language,
-
                 code: code,
-
                 dependencies: result.dependencies,
-
                 stdin: stdin,
-
                 message: result.message,
             },
 
@@ -109,16 +91,13 @@ export const invokeModel = async (state) => {
 
     } catch (error) {
 
-      
+        
         return {
             job: {
                 ...state.job,
-
                 type: "message",
-
                 errorType: "llmError",
             },
-
             messages: [
                 new SystemMessage(
                     "Sorry, unable to process the input."
@@ -146,17 +125,12 @@ export const codeFixer = async (state) => {
                 jobId: state.job.executionId,
             })
         );
-
+        
 
         const result = await structuredModel.invoke(
             messages
         );
         const code = normalizeCode(result.code);
-
-
-      
-
-
         return {
             job: {
                 ...state.job,

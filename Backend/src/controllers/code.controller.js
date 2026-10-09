@@ -3,7 +3,7 @@ import { ApiError } from "../utils/Apierror.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import { exceutionModel } from "../models/execution.model.js";
 import { puttingInputInQueue } from "../Queue/bullmq.js";
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 
 export const getCode = asyncHandler(async (req, res) => {
 
@@ -16,28 +16,19 @@ export const getCode = asyncHandler(async (req, res) => {
         );
 
     }
-    // const userId = req.user._id;
+    const userId = req.user._id;
     
-    // if (!userId) {
-    //     throw new ApiError(
-    //         401,
-    //         "User is not authenticated"
-    //     );
+    if (!userId) {
+        throw new ApiError(401,"User is not authenticated");
+    }
 
-    // }
     const jobId = await puttingInputInQueue({
-        userId:"6aa97e2d6538bf59ec07f998",
+        userId:userId,
         userInput,
         threadId
     }); 
     return res.status(202).json(
-        new ApiResponse(
-            202,
-            {
-            executionId: jobId,
-            },
-            "Code execution started"
-        )
+        new ApiResponse(202,{executionId: jobId,},"Code execution started")
     );
 
 });
@@ -45,15 +36,16 @@ export const getCode = asyncHandler(async (req, res) => {
 export const getHistory = asyncHandler(async(req,res)=>{
     const threadId = req.params.threadId
   
-    if(!threadId ||  threadId==""){
+    if(!threadId ||  threadId===""){
         throw ApiError(404,"Thraed ID not found")
     }
-    // const userId =  req.user
+    const userId = new mongoose.Types.ObjectId(req.user._id)
+    
     const result = await exceutionModel.aggregate([
         {
             $match:{
                 threadId:threadId,
-                // userId:userId,
+                userId:userId
             }
         },
         {
@@ -66,6 +58,9 @@ export const getHistory = asyncHandler(async(req,res)=>{
                 agent:"$messages",
                 language:1,
                 result:1,
+                success:true,
+                iteration:1,
+                executionTime:1, 
                 createdAt:1
 
             }
@@ -83,13 +78,11 @@ export const getHistory = asyncHandler(async(req,res)=>{
 })
 
 export const getUserChatData =  asyncHandler(async(req,res)=>{
+    const userId = new mongoose.Types.ObjectId(req.user._id)
     
-
-    const userId =  new mongoose.Types.ObjectId(req.user._id)
     if(!userId){
         throw new ApiError(404,"the userId do not found")
     }
-    
     const data  = await  exceutionModel.aggregate([
         {
             $match:{
@@ -117,8 +110,7 @@ export const getUserChatData =  asyncHandler(async(req,res)=>{
             }
         }
     ])
-   
-   
+ 
     return res.status(200).json(
         new ApiResponse(200,data,"user Chat data")
     )
@@ -127,11 +119,8 @@ export const getUserChatData =  asyncHandler(async(req,res)=>{
 })
 
 export const deleteChat = asyncHandler(async(req,res)=>{
-   
     const {_id} = req.user
-    
     const {threadId} = req.body
-    
     if(!threadId){
         throw new ApiError(404,"thread Id is misssing")
     }

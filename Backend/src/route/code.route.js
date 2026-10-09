@@ -2,14 +2,15 @@
 import { Router } from "express";
 import { deleteChat, getCode, getHistory ,getUserChatData} from "../controllers/code.controller.js";
 import { userMiddleware  } from "../middleware/user.middleware.js";
+import { rate_limiter } from "../middleware/ratelimiter.middleware.js";
 export const codeRouter = Router()
 
-codeRouter.use(userMiddleware)
+codeRouter.use(rate_limiter)
 
-codeRouter.post('/code',getCode)
+codeRouter.post('/code',userMiddleware,getCode)
 
-codeRouter.get('/code/:threadId',getHistory)
+codeRouter.get('/code/:threadId',userMiddleware,getHistory)
 
-codeRouter.get('/code',getUserChatData)
+codeRouter.get('/code',userMiddleware,getUserChatData)
 
-codeRouter.delete('/code',deleteChat)
+codeRouter.delete('/code',userMiddleware,deleteChat)

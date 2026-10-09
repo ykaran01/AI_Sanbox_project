@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Clock, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
 
 export const AgentMessage = ({ message }) => {
     if (message.status === "generating") {
@@ -10,76 +10,150 @@ export const AgentMessage = ({ message }) => {
         return <Status text="Running code..." />;
     }
 
+    if (message.status === "queued") {
+        return <Status text="Queued..." />;
+    }
+
     if (message.status === "fixing") {
         return <Status text="Fixing code..." />;
     }
 
-    if (message.status === "failed") {
+    const isCompleted = message.status === "completed";
+    const hasCode = Boolean(message.code);
+    const isCode = message.type === "code" || hasCode;
+    const executionSucceeded =
+        message.success === true ||
+        (isCompleted && message.success !== false && !message.error);
+
+    const executionTime = Number(message.executionTime ?? 0);
+    const iteration = Number(message.iteration ?? 0);
+    const maxIterations = Number(message.maxIterations ?? 3);
+
+    const showMetrics =
+        isCompleted ||
+        message.status === "failed" ||
+        message.success === true ||
+        message.success === false;
+    if (isCode && (hasCode || showMetrics)) {
         return (
-            <div className="max-w-[90%]">
-                <p className="text-sm text-red-400 mb-2">
-                    Execution failed
-                </p>
+            <div className="max-w-[90%] space-y-4">
+                {showMetrics && (
+                    <div
+                        className={`flex items-center gap-2 text-sm ${
+                            executionSucceeded
+                                ? "text-green-400"
+                                : "text-red-400"
+                        }`}
+                    >
+                        {executionSucceeded ? (
+                            <CheckCircle2 size={16} />
+                        ) : (
+                            <XCircle size={16} />
+                        )}
+
+                        <span>
+                            {executionSucceeded
+                                ? "Execution successful"
+                                : hasCode?"Failed in Sanboxing":"Execution failure"}
+                        </span>
+                    </div>
+                )}
+
+                {showMetrics && (
+                    <div className="flex flex-wrap gap-3">
+                        <Metric
+                            icon={<Clock size={14} />}
+                            label="Execution time"
+                            value={`${executionTime} ms`}
+                        />
+
+                        <Metric
+                            icon={<RotateCcw size={14} />}
+                            label="Fix attempts"
+                            value={`${iteration} / ${maxIterations}`}
+                        />
+                    </div>
+                )}
+
+                {message.code && (
+                    <CodeBlock
+                        code={message.code}
+                        language={message.language}
+                        jobId={message.jobId || message.executionId}
+                    />
+                )}
+
+                {message.stdin && (
+                    <Output value={message.stdin} title="Input" />
+                )}
+
+                {message.result != null && message.result !== "" && (
+                    <Output
+                        value={message.result}
+                        title="Output"
+                        error={!executionSucceeded}
+                    />
+                )}
 
                 {message.error && (
-                    <Output
-                        value={message.error}
-                        error
-                    />
+                    <Output value={message.error} title="Error" error />
+                )}
+
+                {message.message && (
+                    <Output value={message.message} title="Agent message" />
                 )}
             </div>
         );
     }
 
-    if (message.status === "completed" || message.type) {
+    if (message.status === "failed") {
         return (
-            <div className="max-w-[90%] space-y-4">
-                {message.type === "code" && (
-                    <>
-                        <div className="text-sm text-green-400">
-                            Code executed successfully
-                        </div>
+            <div className="max-w-[90%] space-y-3">
+                <p className="flex items-center gap-2 text-sm text-red-400">
+                    <XCircle size={16} />
+                    Agent failed
+                </p>
 
-                        {message.code && (
-                            <CodeBlock
-                                code={message.code}
-                                language={message.language}
-                                jobId={message.jobId}
-                            />
-                        )}
+                {showMetrics && (
+                    <div className="flex flex-wrap gap-3">
+                        <Metric
+                            icon={<Clock size={14} />}
+                            label="Execution time"
+                            value={`${executionTime} ms`}
+                        />
 
-                        {message.stdin && (
-                            <Output
-                                value={message.stdin}
-                                title="Input"
-                            />
-                        )}
-
-                        {message.result && (
-                            <Output
-
-                                value={message.result}
-                                title="Output"
-                            />
-                        )}
-
-                        {message.message && (
-                            <Output
-                                value={message.message}
-                            />
-                        )}
-                    </>
+                        <Metric
+                            icon={<RotateCcw size={14} />}
+                            label="Fix attempts"
+                            value={`${iteration} / ${maxIterations}`}
+                        />
+                    </div>
                 )}
 
-                {message.type === "message" && message.message && (
-                    <Output value={message.message} />
+                {message.error && (
+                    <Output value={message.error} title="Error" error />
                 )}
             </div>
         );
+    }
+
+    if (message.type === "message" && message.message) {
+        return <Output value={message.message} />;
     }
 
     return null;
 };
+
+const Metric = ({ icon, label, value }) => (
+    <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#111114] px-3 py-2">
+        <span className="text-zinc-400">{icon}</span>
+
+        <div>
+            <p className="text-xs text-zinc-500">{label}</p>
+            <p className="text-sm font-medium text-zinc-200">{value}</p>
+        </div>
+    </div>
+);
 
 const Status = ({ text }) => {
     return (
