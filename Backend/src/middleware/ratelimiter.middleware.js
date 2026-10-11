@@ -13,6 +13,6 @@ export const rate_limiter =  async(req,res,next)=>{
         await limiter.consume(req.ip)
         next()
     }catch(err){
-        return res.status(429).josn({message:"Too may request"})
+        return res.status(429).json({message:"Too may request"})
     }
 }

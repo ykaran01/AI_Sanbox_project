@@ -6,6 +6,8 @@ import { InMemoryStore, } from "@langchain/langgraph"
 import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb"
 import { MongoClient } from "mongodb"
 import "dotenv/config"
+import { summaryModel } from "../llm/model.service.js";
+import { routefortheSummary } from "../langraph/functions.js";
 
 const client = new MongoClient(process.env.MONGODB_URL)
 
@@ -23,25 +25,28 @@ const StateAnnotation = Annotation.Root({
         reducer: messagesStateReducer,
         default: () => [],
     }),
-    job: Annotation({
-    reducer: (_, newRecord) => newRecord,
-    default: () => ({
-        executionId: null,
-        userPrompt: "",
-        type: "",
-        code: "",
-        language: "",
-        result: "",
-        message:"",
-        errorMessages: [],
-        executionTime: 0,
-        dependency: [],
-        success: false,
-        iteration: 0,
-        maxiterations: 3,
-        errorType: null,
+    summary: Annotation({
+        reducer: (_, newSummary) => newSummary
     }),
-}),
+    job: Annotation({
+        reducer: (_, newRecord) => newRecord,
+        default: () => ({
+            executionId: null,
+            userPrompt: "",
+            type: "",
+            code: "",
+            language: "",
+            result: "",
+            message: "",
+            errorMessages: [],
+            executionTime: 0,
+            dependency: [],
+            success: false,
+            iteration: 0,
+            maxiterations: 3,
+            errorType: null,
+        }),
+    }),
 
 });
 
@@ -50,7 +55,13 @@ const graph = new StateGraph(StateAnnotation)
     .addNode("llm_Calling", invokeModel)
     .addNode("Sandbox_execution", Sandbox_execution)
     .addNode("codeFixer", codeFixer)
-    .addEdge(START, "llm_Calling")
+    .addNode("summarynode", summaryModel)
+
+    .addConditionalEdges(START, routefortheSummary, {
+        summary: "summarynode",
+        no: "llm_Calling"
+    })
+    .addEdge("summarynode", "llm_Calling")
     .addConditionalEdges(
         "llm_Calling",
         routeFortheCode,

@@ -209,57 +209,6 @@ export const getUser = asyncHandler(async (req, res) => {
     );
 });
 
-export const refresh = asyncHandler(async (req, res) => {
-    const token = req.cookies?.refreshToken;
-
-    if (!token) {
-        throw new ApiError(401, "Refresh token not found");
-    }
-
-    let decoded;
-
-    try {
-        decoded = jwt.verify(
-            token,
-            process.env.REFRESH_TOKEN_SECRET
-        );
-    } catch {
-        throw new ApiError(401, "Invalid or expired refresh token");
-    }
-
-    const { _id } = decoded;
-
-    if (!_id) {
-        throw new ApiError(401, "Unauthorized");
-    }
-
-    const user = await User.findOne({
-        _id,
-        refreshToken: token
-    });
-
-    if (!user) {
-        throw new ApiError(401, "Unauthorized");
-    }
-
-    const accessToken =
-        await generaeteAccesstokenAndRefrehToken.generateaccesToken(
-            user.email,
-            user.isVerified,
-            user._id
-        );
-
-    res.status(200)
-        .cookie("accessToken", accessToken, cookieOptions)
-        .json(
-            new ApiResponse(
-                200,
-                null,
-                "Token generated successfully"
-            )
-        );
-});
-
 export const changeName = asyncHandler(async (req, res) => {
     const { _id } = req.user;
     const { name } = req.body;
@@ -332,8 +281,8 @@ export const logout = asyncHandler(async (req, res) => {
 });
 
 export const changepassword = asyncHandler(async (req, res) => { 
-    const { newpassword } = req.body
-    const verified = await redisConnection.get(req.user.email);
+    const { newpassword ,email} = req.body
+    const verified = await redisConnection.get(email);
 
     if (verified !== "1") {
         throw new ApiError(401, "Unauthorised");

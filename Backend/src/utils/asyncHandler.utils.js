@@ -7,7 +7,7 @@ export const asyncHandler = (fn) => async (req,res,next) =>{
     }
 
     catch(err){
-        return res.status(err.status || 500).json({
+        return res.status(err.statusCode || 500).json({
             status: 'error',
             message: err.message,
             success :false

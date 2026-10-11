@@ -37,7 +37,7 @@ export const getHistory = asyncHandler(async(req,res)=>{
     const threadId = req.params.threadId
   
     if(!threadId ||  threadId===""){
-        throw ApiError(404,"Thraed ID not found")
+        throw new  ApiError(404,"Thraed ID not found")
     }
     const userId = new mongoose.Types.ObjectId(req.user._id)
     

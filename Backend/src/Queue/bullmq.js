@@ -2,8 +2,6 @@ import { Queue} from "bullmq";
 import { exceutionModel } from "../models/execution.model.js";
 import { redisConnection, publiser } from "../db/connetDB.js";
 
-
-
 const llmQueue = new Queue("llm_queue", {
     connection: redisConnection,
 });

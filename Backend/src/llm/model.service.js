@@ -5,10 +5,14 @@ import { z } from "zod";
 import {
     SystemMessage,
     AIMessage,
+    HumanMessage,
 } from "@langchain/core/messages";
-
+import { summaryprompt } from "./Promt.js";
 import { systemPrompt, fixerPrompt } from "./Promt.js";
 import { publiser } from "../db/connetDB.js";
+import { RemoveMessage } from "@langchain/core/messages"
+import { normalizeCode, normalizeStdin } from "./functions.js";
+
 
 const CodeResponseSchema = z.object({
     type: z.enum(["code", "message"]),
@@ -18,6 +22,7 @@ const CodeResponseSchema = z.object({
     stdin: z.string(),
     message: z.string(),
 });
+
 const model = new ChatGroq({
     apiKey: process.env.GROQ_API_KEY,
     model: "openai/gpt-oss-120b",
@@ -28,32 +33,15 @@ const structuredModel = model.withStructuredOutput(
     CodeResponseSchema
 );
 
-const normalizeCode = (code) => {
-    if (typeof code !== "string") {
-        return "";
-    }
-
-    return code
-        .replace(/\\r\\n/g, "\n")
-        .replace(/\\n/g, "\n")
-        .replace(/\\r/g, "\n");
-};
-
-const normalizeStdin = (stdin) => {
-    if (typeof stdin !== "string") {
-        return "";
-    }
-
-    return stdin
-        .replace(/\\r\\n/g, "\n")
-        .replace(/\\n/g, "\n")
-        .replace(/\\r/g, "\n");
-};
-
 export const invokeModel = async (state) => {
     try {
         const messages = [
-            new SystemMessage(systemPrompt),
+            new SystemMessage(
+                systemPrompt +
+                (state.summary
+                    ? `\nPrevious conversation summary:\n${state.summary}`
+                    : "")
+            ),
             ...state.messages,
         ];
 
@@ -62,7 +50,7 @@ export const invokeModel = async (state) => {
             `thread:${state.threadId}`,
             JSON.stringify({
                 status: "generating",
-                threadId:state.threadId,
+                threadId: state.threadId,
                 jobId: state.job.executionId,
             })
         );
@@ -91,7 +79,7 @@ export const invokeModel = async (state) => {
 
     } catch (error) {
 
-        
+
         return {
             job: {
                 ...state.job,
@@ -121,11 +109,11 @@ export const codeFixer = async (state) => {
             `thread:${state.threadId}`,
             JSON.stringify({
                 status: "fixing",
-                threadId:state.threadId,
+                threadId: state.threadId,
                 jobId: state.job.executionId,
             })
         );
-        
+
 
         const result = await structuredModel.invoke(
             messages
@@ -152,7 +140,7 @@ export const codeFixer = async (state) => {
 
     } catch (error) {
 
-        
+
 
         return {
             job: {
@@ -173,7 +161,29 @@ export const codeFixer = async (state) => {
     }
 };
 
+export const summaryModel = async (state) => {
+    try {
+        await publiser.publish(
+            `thread:${state.threadId}`,
+            JSON.stringify({
+                status: "summerizing",
+                threadId: state.threadId,
+                jobId: state.job.executionId,
+            })
+        );
+        const messageToremove = state.messages.slice(0, 6)
+        const prompt = summaryprompt(state)
+        const result = [new SystemMessage(prompt), ...messageToremove]
+        const summary = await model.invoke(result)
+        return {
+            summary: summary.content,
+            messages: messageToremove.map((message) => {
+                return new RemoveMessage({ id: message.id })
+            })
+        }
 
-
-
-
+    } catch (err) {
+        console.log("error message",err.message)
+        throw err
+    }
+}

@@ -9,6 +9,9 @@ export const AgentMessage = ({ message }) => {
     if (message.status === "running") {
         return <Status text="Running code..." />;
     }
+    if (message.status === "summerizing") {
+        return <Status text="Summerizing the messages..." />;
+    }
 
     if (message.status === "queued") {
         return <Status text="Queued..." />;

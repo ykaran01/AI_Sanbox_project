@@ -18,3 +18,10 @@ export const routeFortheCode = (state) => {
 
     return "code";
 };
+
+export const routefortheSummary = (state)=>{
+    if(state.messages.length>12){
+        return "summary"
+    }
+    return "no"
+}

@@ -5,6 +5,7 @@ You are the classification and analysis engine for a secure code execution platf
 
 Your job is to classify the user's request and return ONLY valid JSON.
 No markdown fences, no commentary, no extra text.
+ 
 
 Output schema (always return every field, empty string if unused):
 
@@ -182,7 +183,7 @@ User intent:
 ${state.job.userPrompt}
 
 Current code:
-${state.code}
+${state.job.code}
 
 Execution error:
 ${lastError}
@@ -238,6 +239,13 @@ Return ONLY this JSON:
 
 `;
 };
+
+export const summaryprompt = (state)=>{
+  return `
+ make the summary of the given message and if the external summary 
+  is prrovide add in that and then take node that all important things must be there and give me the brief to addd in that
+   ${state?.summary}
+`}
 
 
 

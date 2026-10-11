@@ -9,7 +9,7 @@ export const userMiddleware = asyncHandler(async(req,res,next)=>{
     }
     const user =  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET)
     if(!user){
-          throw new ApiError(401,"Unauthorised") 
+          throw new ApiError(401,"Invalid or Expired Token") 
     }
     
     req.user =  user;
@@ -19,7 +19,7 @@ export const userMiddleware = asyncHandler(async(req,res,next)=>{
 export const adminMiddlware =  asyncHandler(async(req,res)=>{
     const token =  req.cookies?.accessToken
     if(!token){
-        throw ApiError(404,"Token does not found")
+        throw  new ApiError(404,"Token does not found")
     }
     const user = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET)
     if(!user || user?.email!==process.env.ADMIN_EMAIL){
