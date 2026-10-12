@@ -2,8 +2,6 @@ import { subscriber } from "../db/connetDB.js";
 
 export const websocket = (io) => {
     
-
-
     subscriber.psubscribe("thread:*");
     subscriber.on("pmessage", (pattern, channel, message) => {
         const threadId = channel.split(":")[1];

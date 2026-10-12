@@ -16,7 +16,7 @@ export const userMiddleware = asyncHandler(async(req,res,next)=>{
     next()
 })
 
-export const adminMiddlware =  asyncHandler(async(req,res)=>{
+export const adminMiddlware =  asyncHandler(async(req,res,next)=>{
     const token =  req.cookies?.accessToken
     if(!token){
         throw  new ApiError(404,"Token does not found")

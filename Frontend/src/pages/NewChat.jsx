@@ -1,9 +1,11 @@
 import { Navigate } from "react-router-dom";
 import { useContext } from "react"
 import { UserConetxt } from "@/pages/UserProvider";
+;
 const NewChat = () => {
   const { user } = useContext(UserConetxt)
   if (!user) {
+   
     return (
       <Navigate
         to={`/login`}

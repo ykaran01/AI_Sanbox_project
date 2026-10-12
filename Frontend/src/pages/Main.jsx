@@ -7,9 +7,19 @@ import { socket } from "../websocket/socket.config.js";
 import { messageRequest, getHistory } from "../services/service.js";
 import { AgentMessage } from "./extra.jsx";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 
 const Main = () => {
+  const navigate = useNavigate()
   const data =  useContext(UserConetxt)
+ 
+ useEffect(()=>{
+   if(!data.user){
+    
+    navigate('/login')
+  }
+ },[data.user])
   const {threadId} = useParams()
   const  THREAD_ID = threadId
   const [input, setInput] = useState("");
@@ -27,10 +37,9 @@ const Main = () => {
       try {
 
         setLoadingHistory(true);
-        const response = await getHistory(THREAD_ID);
-        const executions = response || [];
+        const response = await getHistory(THREAD_ID) || [];
         const history = [];
-        executions.forEach((execution) => {
+        response.forEach((execution) => {
           if (execution.user) {
             history.push({
               id: `user-${execution.jobId}`,
@@ -73,10 +82,6 @@ const Main = () => {
 
   useEffect(() => {
     const handleConnect = () => {
-      console.log(
-        "Connected:",
-        socket.id
-      );
       socket.emit(
         "joinThread",
         THREAD_ID
@@ -88,19 +93,13 @@ const Main = () => {
         message
       );
       setMessages((prev) => {
-        const index = prev.findIndex(
-          (item) =>
-            String(item.jobId) ===
-            String(message.jobId)
-        );
+        const index = prev.findIndex((item) =>String(item.jobId) ===String(message.jobId));
         const updatedMsg = {
           role: "agent",
-          ...message,
-        };
+          ...message,};
         if (index !== -1) {
           const updated = [...prev];
           updated[index] = {
-            ...updated[index],
             ...updatedMsg,
           };
           return updated;
@@ -134,7 +133,6 @@ const Main = () => {
     };
   }, []);
 
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -159,9 +157,7 @@ const Main = () => {
     setInput("");
     setSending(true);
     try {
-      await messageRequest(
-        userInput,THREAD_ID
-      );
+      await messageRequest(userInput,THREAD_ID);
 
     } catch (error) {
       console.error(
@@ -202,52 +198,31 @@ const Main = () => {
   return (
 
     <div className="min-h-screen bg-[#09090b] text-white flex">
-
       <SidebarTrigger />
-
-
       <main className="flex-1 flex flex-col min-h-screen">
-
-
         <div className="flex-1 overflow-y-auto px-6">
-
           <div className="max-w-3xl mx-auto py-10">
-
             {loadingHistory && (
-
               <div className="flex justify-center py-10">
-
                 <span className="text-sm text-zinc-500">
                   Loading conversation...
                 </span>
-
               </div>
-
             )}
-
             {!loadingHistory &&
               messages.length === 0 && (
-
                 <div className="flex flex-col items-center justify-center h-[70vh]">
-
                   <h1 className="text-3xl font-semibold">
                     Hey {data?.user?.username} 
                   </h1>
-
                   <p className="text-zinc-500 mt-2">
                     What do you want to build today?
                   </p>
-
                 </div>
-
               )}
-
-
             <div className="space-y-8">
-
               {messages.map(
                 (msg, index) => (
-
                   <div
                     key={
                       msg.id ||
@@ -257,27 +232,17 @@ const Main = () => {
                   >
                     {msg.role === "user" ||
                     msg.type === "user" ? (
-
                       <div className="flex justify-end">
-
                         <div className="max-w-[75%] bg-zinc-800 rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap break-words">
-
                           {msg.content}
-
                         </div>
-
                       </div>
-
                     ) : (
-
                       <AgentMessage
                         message={msg}
                       />
-
                     )}
-
                   </div>
-
                 )
               )}
               <div ref={messagesEndRef} />
@@ -285,28 +250,18 @@ const Main = () => {
           </div>
         </div>
         <div className="px-6 pb-5">
-
           <div className="max-w-3xl mx-auto">
-
             <div className="border border-white/10 rounded-xl bg-[#111114] overflow-hidden">
-
               <Textarea
-
                 value={input}
-
                 onChange={(e) =>
                   setInput(e.target.value)
                 }
-
                 onKeyDown={handleKeyDown}
-
                 placeholder="Describe your coding task..."
-
                 disabled={sending}
-
                 className="min-h-[60px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 text-sm px-4 pt-4 disabled:opacity-60"
               />
-
               <div className="flex justify-end p-3">
                 <button
                   onClick={requestMessage}

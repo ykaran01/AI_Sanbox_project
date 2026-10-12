@@ -1,160 +1,226 @@
-import React, { useState } from "react";
-import { EyeOff } from 'lucide-react'
+
+import React, { useState, useContext, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "@/services/service";
-import { useNavigate } from "react-router-dom";
 import Forgetpassword from "./Forgetpassword";
 import { UserConetxt } from "./UserProvider";
-import { useContext } from "react";
-
+import {toast} from "sonner"
 const SignIn = () => {
-  const {setUserData ,user} = useContext(UserConetxt)
-  const navigate =  useNavigate()
+  const { setUserData, user } = useContext(UserConetxt);
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showpassword, setshowpassword] = useState(false)
-  const [open, setOpen] = useState(false)
-  if(user){
-      navigate('/')
-  }
-  const handleSubmit = async(e) => {
-    e.preventDefault();
-    if(!email || !password)
-      return;
-    try{
-      const data = await loginUser({email,password},setUserData);
-      if(data){
-        navigate('/')
-      }
+  const [showPassword, setShowPassword] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (user) {
+
+      navigate("/", { replace: true });
     }
-    catch(err){
-      console.log(err.message)
+  }, [user, navigate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!email.trim() || !password) {
+      toast.error("Please enter your email and password.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await loginUser({ email, password }, setUserData);
+
+      if (data) {
+        toast.success("Login successful!");
+        navigate("/", { replace: true });
+      }
+    } catch (err) {
+      toast.error(err.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex w-full h-full bg-amber-300"  >
-      <Forgetpassword open={open}  setOpen={setOpen}/>
-      <div className="left w-2/3 min-h-screen bg-[#111114] text-white flex flex-col justify-center px-16">
+    <div className="min-h-screen w-full bg-[#111114] text-white">
+      <Forgetpassword open={open} setOpen={setOpen} />
 
-        <div className="absolute top-8 left-10">
-          <h2 className="text-xl font-semibold">
+      <div className="flex min-h-screen flex-col lg:flex-row">
+       
+        <section className="relative flex min-h-[240px] flex-1 flex-col justify-center
+          px-6 py-10 sm:px-10 sm:py-12 lg:min-h-screen lg:px-12 xl:px-16">
+
+          <Link
+            to="/"
+            className="absolute left-6 top-5 text-lg font-semibold
+              sm:left-10 sm:top-8 lg:left-12 xl:left-16"
+          >
             Box_Agent
-          </h2>
-        </div>
+          </Link>
 
-        <div className="max-w-xl">
-
-          <h1 className="text-5xl font-bold leading-tight">
-            Build.
-            <br />
-            Run.
-            <br />
-            <span className="text-zinc-500">Fix Automatically.</span>
-          </h1>
-
-          <p className="mt-6 text-lg text-zinc-400 leading-relaxed">
-            An AI-powered coding agent that writes, executes, and
-            automatically fixes your code inside a secure sandbox.
-          </p>
-
-
-          <div className="flex gap-8 mt-10 text-sm text-zinc-400">
-            <div>
-              <p className="text-white font-medium">AI Coding</p>
-              <p className="mt-1">Generate code</p>
-            </div>
-
-            <div>
-              <p className="text-white font-medium">Sandbox</p>
-              <p className="mt-1">Run securely</p>
-            </div>
-
-            <div>
-              <p className="text-white font-medium">Auto Fix</p>
-              <p className="mt-1">Fix errors</p>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-      <div className="  right w-1/3 min-h-screen  border-l border-l-white/20  bg-[#121218] text-white flex items-center justify-center px-4">
-
-        <div className="w-full max-w-sm">
-
-          <div className="text-center mb-6">
-            <h1 className="text-4xl font-semibold">
-              Welcome back
+          <div className="mx-auto mt-8 w-full max-w-xl lg:mt-0">
+            <h1 className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
+              Build.
+              <br />
+              Run.
+              <br />
+              <span className="text-zinc-500">
+                Fix Automatically.
+              </span>
             </h1>
 
-            <p className=" text-zinc-500 mt-2">
-              Sign in to continue to Agent
+            <p className="mt-4 max-w-lg text-sm leading-relaxed
+              text-zinc-400 sm:mt-6 sm:text-base lg:text-lg">
+              An AI-powered coding agent that writes, executes, and
+              automatically fixes your code inside a secure sandbox.
             </p>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="text-sm text-zinc-400">
-                Email
-              </label>
-              <Input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-2 h-10 bg-[#111114] border-white/10"
-                required
-              />
-            </div>
-            <div>
-              <label className="text-sm text-zinc-400">
-                Password
-              </label>
-              <div className="relative">
-                <Input
-                  type= {showpassword?"text":"password" }
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-2 h-10 bg-[#111114] border-white/10 pr-10"
-                  required
-                />
 
-                <button
-                  type="button"
-                  onClick={()=>{
-                    setshowpassword(prev=>!prev)
-                  }}
-                  className="absolute right-3 top-2/3 -translate-y-1/2 text-zinc-500 hover:text-white"
-                >
-                  <EyeOff size={18} />
-                </button>
+            <div className="mt-6 flex flex-wrap gap-x-6 gap-y-4
+              text-xs text-zinc-400 sm:mt-10 sm:gap-x-8 sm:text-sm">
+              <div>
+                <p className="font-medium text-white">AI Coding</p>
+                <p className="mt-1">Generate code</p>
+              </div>
+
+              <div>
+                <p className="font-medium text-white">Sandbox</p>
+                <p className="mt-1">Run securely</p>
+              </div>
+
+              <div>
+                <p className="font-medium text-white">Auto Fix</p>
+                <p className="mt-1">Fix errors</p>
               </div>
             </div>
-            <Button
-              type="submit"
-              className="w-full bg-white h-10 text-black hover:bg-zinc-200"
+          </div>
+        </section>
+
+        {/* Right: Sign-in form */}
+        <section className="flex flex-1 items-center justify-center
+          border-t border-white/10 bg-[#121218] px-5 py-10
+          sm:px-8 lg:min-h-screen lg:border-l lg:border-t-0
+          lg:border-white/10 lg:px-10 xl:px-16">
+
+          <div className="w-full max-w-sm">
+            <div className="mb-7 text-center sm:mb-8">
+              <h2 className="text-3xl font-semibold sm:text-4xl">
+                Welcome back
+              </h2>
+
+              <p className="mt-2 text-sm text-zinc-500 sm:text-base">
+                Sign in to continue to Agent
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label
+                  htmlFor="email"
+                  className="text-sm text-zinc-400"
+                >
+                  Email
+                </label>
+
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-2 h-11 border-white/10 bg-[#111114]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="password"
+                  className="text-sm text-zinc-400"
+                >
+                  Password
+                </label>
+
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="mt-2 h-11 border-white/10 bg-[#111114] pr-11"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    aria-pressed={showPassword}
+                    className="absolute right-3 top-[22px] text-zinc-500
+                      transition-colors hover:text-white"
+                  >
+                    {showPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <p role="alert" className="text-sm text-red-400">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="h-11 w-full bg-white text-black
+                  hover:bg-zinc-200 disabled:opacity-60"
+              >
+                {loading ? "Signing in..." : "Sign In"}
+              </Button>
+            </form>
+
+            <p className="mt-6 text-center text-sm text-zinc-500">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="text-white hover:underline"
+              >
+                Sign Up
+              </Link>
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="mt-5 block w-full text-right text-sm
+                text-zinc-300 underline underline-offset-4
+                hover:text-white"
             >
-              Sign In
-            </Button>
-          </form>
-          <p className="text-center text-sm text-zinc-500 mt-6">
-            Don't have an account?{" "}
-            <button className="text-white   hover:underline">
-              <Link to="/signup" >Sign Up</Link>
+              Forgot Password?
             </button>
-          </p>
-          <button  onClick={()=>{
-            setOpen(true)
-          }} className="text-center underline w-full  flex justify-end text-sm text-white mt-6">
-            Forget Password?
-          </button>
-        </div>
+          </div>
+        </section>
       </div>
     </div>
-
   );
 };
 

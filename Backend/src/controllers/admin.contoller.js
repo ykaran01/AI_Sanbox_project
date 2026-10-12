@@ -1,8 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import { ApiResponse } from "../utils/ApiResponse.utils.js";
 import { exceutionModel } from "../models/execution.model.js";
-
-
 export const metrisData = asyncHandler(async(req,res)=>{
 
     const total=  await exceutionModel.countDocuments()

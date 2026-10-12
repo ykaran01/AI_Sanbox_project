@@ -10,21 +10,24 @@ import {
 import { verifyotp } from "@/services/service";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 const Otp = ({Open,setisOpen,email}) => {
   const navigate =  useNavigate()
   const [otp, setotp] = useState("")
   const handleSubmit  = async(e)=>{
     
     if(!otp || otp.length!==6){
+      toast.error("OTP is not correct")
       return;
     }
     try{
       const data =  await verifyotp(email,otp)
       if(data){
+        toast.success("OTP verified Successfully")
         navigate('/login')
       }
     }catch(err){
-      console.log(err.message)
+      toast.error(err.message)
     }
       
   }

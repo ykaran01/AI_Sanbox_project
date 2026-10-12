@@ -7,6 +7,11 @@ import SignUp from "./pages/SignUp";
 import Layout from "./pages/SidebarWrapper";
 import NewChat from "@/pages/NewChat";
 import { Outlet } from "react-router-dom";
+import Error from "./pages/Error";
+import {Toaster} from "sonner"
+import Admin from "./pages/Admin";
+
+
 const App = () => {
 
   const Protected = () => {
@@ -18,16 +23,21 @@ const App = () => {
   }
   return (
     <BrowserRouter>
+    <Toaster  position="top-right" richColors />
       <Routes>
         <Route path="/signup" element={<SignUp />} />
         <Route element={<Protected />}>
           <Route path='/' element={<NewChat/>} ></Route>
           <Route path="/login" element={<SignIn />} />
           <Route element={<Layout />}>
+           <Route path="/admin" element={<Admin />} />
             <Route path="/chat/:threadId" element={<Main />} />
           </Route>
         </Route>
+        <Route path="*" element={<Error/>} />
+       
       </Routes>
+      
     </BrowserRouter>
   );
 };

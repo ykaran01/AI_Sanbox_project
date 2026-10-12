@@ -11,6 +11,7 @@ import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { change, sendEmail, verifyOtp } from "@/services/service";
+import {toast} from "sonner"
 
 const Forgetpassword = ({ open, setOpen }) => {
   const [email, setEmail] = useState("");
@@ -29,7 +30,7 @@ const Forgetpassword = ({ open, setOpen }) => {
       } 
     }
     catch (err) {
-      console.log(err.message)
+      toast.error(err.message)
       setOpen(false)
     }
 
@@ -37,7 +38,10 @@ const Forgetpassword = ({ open, setOpen }) => {
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    if (otp.length !== 6) return;
+    if (otp.length !== 6) {
+      toast.error("OTP length must be 6")
+      return;
+}
     try {
       const data = await verifyOtp(otp, email)
       if (data) {
@@ -45,7 +49,7 @@ const Forgetpassword = ({ open, setOpen }) => {
       } 
     }
     catch (err) {
-      console.log(err.message)
+      toast.error(err.message)
       setOpen(false)
     }
   };
@@ -55,13 +59,14 @@ const Forgetpassword = ({ open, setOpen }) => {
     if (!password || !confirmPassword) return;
 
     if (password !== confirmPassword) {
-      console.log("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
     try {
-      const data = await change(password)
+      const data = await change(password,email)
       if (data) {
+        toast.success("The password change successfully")
         setStep(2);
         setOpen(false);
         setStep(1);
@@ -72,7 +77,7 @@ const Forgetpassword = ({ open, setOpen }) => {
       } 
     }
     catch (err) {
-    
+      toast.error(err.message)
       setOpen(false)
     }
 

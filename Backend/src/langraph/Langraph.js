@@ -5,7 +5,6 @@ import { routeAfterExecution, routeFortheCode } from "../langraph/functions.js";
 import { InMemoryStore, } from "@langchain/langgraph"
 import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb"
 import { MongoClient } from "mongodb"
-import "dotenv/config"
 import { summaryModel } from "../llm/model.service.js";
 import { routefortheSummary } from "../langraph/functions.js";
 

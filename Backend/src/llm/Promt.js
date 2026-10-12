@@ -14,7 +14,6 @@ Output schema (always return every field, empty string if unused):
   "language": "",
   "code": "",
   "dependencies": [],
-  "stdin": "",
   "message": ""
 }
 
@@ -77,7 +76,7 @@ Correct:
   "language": "python",
   "code": "a = 5\\nb = 10\\nprint(a + b)",
   "dependencies": [],
-  "stdin": "",
+
   "message": "Adds two example numbers and prints their sum."
 }
 
@@ -88,7 +87,7 @@ Incorrect:
   "language": "python",
   "code": "a = int(input())\\nb = int(input())\\nprint(a + b)",
   "dependencies": [],
-  "stdin": "5\\n10",
+  
   "message": "Reads two numbers and adds them."
 }
 
@@ -103,19 +102,12 @@ User:
 
 The generated code may read input because the user explicitly supplied it.
 
-stdin must contain exactly:
-
-5
-10
-
 Do NOT invent additional input.
 
 ### Example input
 
 If the user does NOT provide input values:
 
-- Do not use stdin.
-- Set stdin to "".
 - Put example values directly inside the generated code.
 - The code must execute without waiting for external input.
 
@@ -136,7 +128,6 @@ Set:
 "language": ""
 "code": ""
 "dependencies": []
-"stdin": ""
 
 message must contain the complete answer to the user's question.
 

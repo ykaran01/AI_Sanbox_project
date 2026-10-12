@@ -17,27 +17,25 @@ import {
 import { useEffect, useState, useContext } from "react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
 import { useNavigate } from "react-router-dom";
-
 import { UserConetxt } from "./UserProvider.jsx";
-
+import {toast} from "sonner"
 export function AppSidebar() {
   const navigate = useNavigate();
-
   const [exampleTasks, setexampleTasks] = useState([]);
-
   const { user, setUserData } = useContext(UserConetxt);
+
 
   const onclickhandler = async () => {
     try {
       const data = await logout(setUserData);
-
+      toast.success("Logged out successfully.");
       if (data) {
+
         navigate("/login");
       }
     } catch (err) {
-      console.log(err.message);
+      toast.error("Failed to log out.");
     }
   };
 
@@ -47,7 +45,7 @@ export function AppSidebar() {
 
     try {
       const data = await deleteChat(threadId);
-
+      toast.success("Chat deleted successfully.");
       if (data) {
         setexampleTasks((prev) =>
           prev.filter((task) => task.threadId !== threadId)
@@ -58,7 +56,8 @@ export function AppSidebar() {
         }
       }
     } catch (err) {
-      console.error("Failed to delete chat:", err);
+
+      toast.error("Failed to delete chat.");
     }
   };
 
@@ -140,9 +139,15 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="bg-zinc-950">
-
+      {user?.email === import.meta.env.VITE_ADMIN_EMAIL && (
+        <button onClick={()=>{
+          navigate('/admin')
+        }} className="text-white font-bold text-sm py-2 rounded-2xl bg-green-600">
+          Admin Panel
+        </button>
+      )}
         <div className="flex w-full bg-zinc-800 p-2 rounded-2xl justify-between gap-4 items-center">
-
+          
           <div className="flex gap-4 items-center">
 
             <Avatar>

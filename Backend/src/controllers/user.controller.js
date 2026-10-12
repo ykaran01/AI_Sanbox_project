@@ -186,7 +186,7 @@ export const getUser = asyncHandler(async (req, res) => {
 
   
     const user = await User.findById(userId).select(
-        "-verifyOTP -expireOTP -password -refreshToken -email -_id"
+        "-verifyOTP -expireOTP -password -refreshToken  -_id"
     );
 
     if (!user) {
@@ -289,12 +289,12 @@ export const changepassword = asyncHandler(async (req, res) => {
     }
     const password = await bcrypt.hash(newpassword, 12)
     await User.findOneAndUpdate({
-        _id: req.user._id
+        email: email
     }, {
         $set: { password: password }
     })
 
-    await redisConnection.del(req.user.email)
+    await redisConnection.del(email)
     res.status(200).json(new ApiResponse(200, null, "Password Change successfully"))
 
 

@@ -18,7 +18,6 @@ export const messageRequest = async (userInput,threadId)=>{
     
 }
 
-
 export const getHistory =  async(threadId)=>{
     try{
         const {data} =  await API.get(`/code/${threadId}`)
@@ -91,7 +90,7 @@ export const loginUser = async(info,setuserdata)=>{
 export const sendEmail = async(email)=>{
     try{
         const {data} = await API.post('/user/send',{email}) 
-        return data.data.status===200
+        return data.status===200
     }
     catch(err){
         console.log(err.response?.data?.message)
@@ -102,7 +101,7 @@ export const sendEmail = async(email)=>{
 export const verifyOtp = async(otp,email)=>{
     try{
         const {data} = await API.post('/user/verify',{otp,email}) 
-        return data.data.status===200
+        return data.status===200
     }
     catch(err){
         console.log(err.response?.data?.message)
@@ -110,10 +109,10 @@ export const verifyOtp = async(otp,email)=>{
     }
 }
 
-export const change = async(newpassword)=>{
+export const change = async(newpassword,email)=>{
     try{
-        const {data} = await API.post('/user/change',{newpassword}) 
-        return data.data.status===200
+        const {data} = await API.post('/user/change',{newpassword,email}) 
+        return data.status===200
     }
     catch(err){
         console.log(err.response?.data?.message)
@@ -139,14 +138,25 @@ export const logout = async(setuserdata)=>{
 
 export const deleteChat = async(threadId)=>{
     try{
-        const {data } = await API.delete('code',{data:{threadId}})
-        if(data.status===200 || data.data.status===200){
+        const {data} = await API.delete('code',{data:{threadId}})
+        if(data.status===200 ){
             return true
         }
     }catch(err){
         console.log(err.response?.data?.messsage)
     }
     
+}
+
+export const getMetrics = async()=>{
+    try{
+        const {data} = await API.get('/user')
+        return data
+    }
+    catch(err){
+        console.log(err.response?.data?.message)
+        throw new Error(err.response?.data?.message || "Something Went Wrong")
+    }
 }
 
 

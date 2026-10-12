@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 const _dirname = path.dirname(fileURLToPath(import.meta.url))
 
 dotenv.config({
-    path:path.resolve(_dirname,"../.env")
+    path:path.resolve(_dirname,"../../.env")
 })
 import { redisConnection, publiser ,connectDB} from "../db/connetDB.js";
 import { HumanMessage } from "@langchain/core/messages";

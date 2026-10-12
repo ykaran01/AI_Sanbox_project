@@ -1,6 +1,5 @@
 import {fork} from "node:child_process"
 
-
 const workers = []
 
 const workersCnt = 2

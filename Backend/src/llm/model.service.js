@@ -19,7 +19,7 @@ const CodeResponseSchema = z.object({
     language: z.string(),
     code: z.string(),
     dependencies: z.array(z.string()),
-    stdin: z.string(),
+
     message: z.string(),
 });
 

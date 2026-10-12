@@ -4,15 +4,11 @@ import { publiser } from "../db/connetDB.js";
 const INSTALL_TIMEOUT = 120000;
 import { randomUUID } from "crypto";
 
-const PYTHON_PACKAGE =
-    /^[A-Za-z0-9][A-Za-z0-9._-]*(?:==[A-Za-z0-9][A-Za-z0-9.!+_-]*)?$/;
+const PYTHON_PACKAGE =/^[A-Za-z0-9][A-Za-z0-9._-]*(?:==[A-Za-z0-9][A-Za-z0-9.!+_-]*)?$/;
 
-const NPM_PACKAGE =
-    /^(?:@[A-Za-z0-9._-]+\/)?[A-Za-z0-9._-]+(?:@[0-9][A-Za-z0-9.+_-]*)?$/;
-
+const NPM_PACKAGE =/^(?:@[A-Za-z0-9._-]+\/)?[A-Za-z0-9._-]+(?:@[0-9][A-Za-z0-9.+_-]*)?$/;
 
 const TIMEOUT = 30000;
-
 
 const installDependencies = async (
     language,
@@ -66,7 +62,6 @@ const installDependencies = async (
     return result;
 };
 
-
 const validateDependencies = (dependencies, language) => {
     if (dependencies == null) return [];
 
@@ -96,24 +91,30 @@ const validateDependencies = (dependencies, language) => {
     return [...new Set(dependencies)];
 };
 
-const runDocker = (args, input = "", timeout = TIMEOUT) =>
+const runDocker = (args, input = "", timeout = TIMEOUT,container="") =>
     new Promise((resolve) => {
         let stdout = "";
         let stderr = "";
         let timedOut = false;
         let settled = false;
 
-        const finish = (result) => {
+        const finish = async(result) => {
             if (settled) return;
             settled = true;
+            if (container !== "" && (result.timeout || result.exitCode === -1)) {
+                await forceRemoveContainer(container);
+            }
             clearTimeout(timer);
             resolve(result);
         };
 
         const docker = spawn("docker", args, { stdio: ["pipe", "pipe", "pipe"] });
 
-        const timer = setTimeout(() => {
+        const timer = setTimeout(async() => {
             timedOut = true;
+            if( container!==""){
+                await forceRemoveContainer(container)
+            }
             docker.kill("SIGKILL");
         }, timeout);
 
@@ -201,11 +202,12 @@ const executeCode = async (state) => {
         const command = runtime.compile
             ? `${runtime.compile} && ${runtime.run}`
             : runtime.run;
-
+        const containerName = `container-${randomUUID()}`
         const args = [
             "run",
             "--rm",
             "-i",
+            "--name",containerName,
             "--network=none",
             "--memory=250m",
             "--memory-swap=250m",
@@ -234,7 +236,7 @@ const executeCode = async (state) => {
             `cat > ${runtime.sourceFile} && ${command}`
         );
 
-        const response = await runDocker(args, code, TIMEOUT);
+        const response = await runDocker(args, code, TIMEOUT,containerName);
 
         return {
             exitCode: response.exitCode,
@@ -251,7 +253,7 @@ const executeCode = async (state) => {
     } finally {
         if (volumeCreated) {
             await runDocker(
-                ["volume", "rm", "-f", volume],
+                ["volume", "rf", "-f", volume],
                 "",
                 10000
             );
@@ -305,3 +307,11 @@ export const Sandbox_execution = async (state) => {
         };
     }
 };
+
+const forceRemoveContainer = (name)=>{
+    new Promise((resolve)=>{
+        const docker =  spawn("docker",["rf ","-f",name],{"stdio":"ignore"})
+        docker.on("close",resolve)
+        docker.on("error",resolve)
+    })
+}
